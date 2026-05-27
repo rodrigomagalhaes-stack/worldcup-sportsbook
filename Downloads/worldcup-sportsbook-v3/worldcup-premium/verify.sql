@@ -1,1 +1,0 @@
-SELECT name FROM public.teams ORDER BY name;

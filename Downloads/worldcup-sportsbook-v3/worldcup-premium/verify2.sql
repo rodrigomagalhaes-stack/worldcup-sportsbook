@@ -1,1 +1,0 @@
-SELECT id, date, time_brt, home, away FROM public.matches WHERE id IN (8,31,32,42,43,44,48,51,52,65,66) ORDER BY id;
