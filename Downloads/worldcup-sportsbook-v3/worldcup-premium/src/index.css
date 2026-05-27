@@ -1,0 +1,141 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;0,9..40,800;1,9..40,400&family=Barlow+Condensed:wght@600;700;800&display=swap');
+@import "tailwindcss";
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --font:   'DM Sans', sans-serif;
+  --font-d: 'Barlow Condensed', sans-serif;
+
+  --bg:        #F5F7FA;
+  --surface:   #ffffff;
+  --card:      rgba(255,255,255,0.96);
+  --card2:     #f8fafc;
+  --line:      #e8ecf2;
+  --line2:     #d1d8e4;
+
+  --t1:        #111827;
+  --t2:        #6B7280;
+  --t3:        #9CA3AF;
+
+  --green:     #16C47F;
+  --green-bg:  rgba(22,196,127,0.08);
+  --green-mid: #1dd68a;
+  --green-dark:#0fa865;
+  --green-glow: rgba(22,196,127,0.20);
+
+  --gold:      #F4C542;
+  --gold-bg:   rgba(244,197,66,0.10);
+  --gold-line: rgba(244,197,66,0.30);
+
+  --blue:      #3BA7FF;
+  --blue-bg:   rgba(59,167,255,0.08);
+  --purple:    #A855F7;
+  --red:       #ef4444;
+
+  --radius:    20px;
+  --radius-s:  12px;
+  --radius-xs: 8px;
+
+  --shadow-sm: 0 1px 3px rgba(0,0,0,0.05), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow:    0 4px 16px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
+  --shadow-lg: 0 12px 40px rgba(0,0,0,0.10), 0 4px 12px rgba(0,0,0,0.06);
+  --shadow-green: 0 4px 20px rgba(22,196,127,0.18);
+}
+
+[data-theme="dark"] {
+  --bg:        #0d1117;
+  --surface:   #161b22;
+  --card:      rgba(28,35,48,0.97);
+  --card2:     #1e2535;
+  --line:      rgba(255,255,255,0.06);
+  --line2:     rgba(255,255,255,0.10);
+  --t1:        #f0f4ff;
+  --t2:        #8892a8;
+  --t3:        #4a5568;
+  --green:     #16C47F;
+  --green-bg:  rgba(22,196,127,0.10);
+  --green-mid: #1dd68a;
+  --green-dark:#16C47F;
+  --green-glow: rgba(22,196,127,0.15);
+  --gold:      #F4C542;
+  --gold-bg:   rgba(244,197,66,0.10);
+  --gold-line: rgba(244,197,66,0.25);
+  --shadow-sm: 0 1px 6px rgba(0,0,0,0.30);
+  --shadow:    0 4px 24px rgba(0,0,0,0.40);
+  --shadow-lg: 0 12px 48px rgba(0,0,0,0.55);
+  --shadow-green: 0 4px 20px rgba(22,196,127,0.12);
+}
+
+body {
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--t1);
+  min-height: 100vh;
+  font-size: 13px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  transition: background .25s, color .25s;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--line2); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--t3); }
+.no-scroll::-webkit-scrollbar { display: none; }
+.no-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+input, textarea, select {
+  font-family: var(--font);
+  background: var(--bg);
+  border: 1.5px solid var(--line2);
+  color: var(--t1);
+  border-radius: var(--radius-s);
+  padding: 9px 12px;
+  font-size: 13px;
+  outline: none;
+  width: 100%;
+  transition: border-color .15s, box-shadow .15s;
+}
+input::placeholder, textarea::placeholder { color: var(--t3); }
+input:focus, textarea:focus, select:focus {
+  border-color: var(--green);
+  box-shadow: 0 0 0 3px var(--green-glow);
+}
+textarea { resize: none; }
+select option { background: var(--surface); }
+
+.flag-lg {
+  width: clamp(60px, 8vw, 80px);
+  height: clamp(40px, 5.5vw, 54px);
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  display: block;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+.flag-sm {
+  width: 24px; height: 16px;
+  object-fit: cover;
+  border-radius: 3px;
+  border: 1px solid var(--line);
+  display: block;
+  flex-shrink: 0;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+@keyframes star-pop {
+  0%   { transform: scale(1); }
+  50%  { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+.star-pop { animation: star-pop .25s ease; }
+
+@media print {
+  header, aside, .no-print { display: none !important; }
+  body { background: white !important; }
+}
