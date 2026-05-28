@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Plus, Star, MapPin } from 'lucide-react';
-import { groups, promoTypes } from '../data/matches';
+import { groups } from '../data/matches';
 import Flag from './Flag';
 import EventModal from './EventModal';
 
