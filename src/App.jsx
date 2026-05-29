@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, BarChart3, Zap, Sun, Moon, Printer } from 'lucide-react';
+import { CalendarDays, BarChart3, Zap, Sun, Moon, Printer, Loader2 } from 'lucide-react';
 import { format } from 'date-fns';
 import DateBar from './components/DateBar';
 import DayView from './components/DayView';
@@ -24,7 +24,7 @@ const TABS = [
 export default function App() {
   const [tab, setTab] = useState('day');
   const [date, setDate] = useState(getDefault);
-  const { events, addEvent, updateEvent, deleteEvent, generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal } = useStore();
+  const { events, loading, addEvent, updateEvent, deleteEvent, generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal } = useStore();
   const { theme, toggle } = useTheme();
 
   return (
@@ -133,6 +133,20 @@ export default function App() {
 
       {/* ── Main ── */}
       <main style={{ flex: 1, overflowY: 'auto', padding: 'clamp(20px,3vw,40px) clamp(16px,4vw,48px)' }}>
+        {loading ? (
+          <div style={{
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+            gap: 16, height: '100%', minHeight: 320, color: 'var(--t3)',
+          }}>
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              style={{ display: 'flex' }}>
+              <Loader2 size={36} style={{ color: 'var(--green)' }} />
+            </motion.div>
+            <p style={{ fontSize: 14, fontWeight: 500, color: 'var(--t2)' }}>Carregando dados...</p>
+          </div>
+        ) : (
         <AnimatePresence mode="wait">
           {tab === 'day' && (
             <motion.div key="day"
@@ -169,6 +183,7 @@ export default function App() {
             </motion.div>
           )}
         </AnimatePresence>
+        )}
       </main>
     </div>
   );
