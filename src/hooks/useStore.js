@@ -1,13 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchAllEvents, insertEvent, updateEvent as sbUpdate, deleteEvent as sbDelete } from '../lib/supabase';
+import { fetchAllEvents, insertEvent, updateEvent as sbUpdate, deleteEvent as sbDelete, fetchGeneralPromotions, insertGeneralPromotion, deleteGeneralPromotion } from '../lib/supabase';
 
 export function useStore() {
   const [events, setEvents] = useState({});
+  const [generalPromotions, setGeneralPromotions] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchAllEvents()
-      .then(setEvents)
+    Promise.all([
+      fetchAllEvents().then(setEvents),
+      fetchGeneralPromotions().then(setGeneralPromotions),
+    ])
       .catch(err => console.error('Supabase fetch error:', err))
       .finally(() => setLoading(false));
   }, []);
@@ -45,7 +48,25 @@ export function useStore() {
     }
   }, []);
 
-  return { events, loading, addEvent, updateEvent, deleteEvent };
+  const addGeneralPromotion = useCallback(async (promo) => {
+    try {
+      const saved = await insertGeneralPromotion(promo);
+      setGeneralPromotions(p => [saved, ...p]);
+    } catch (err) {
+      console.error('addGeneralPromotion error:', err);
+    }
+  }, []);
+
+  const deleteGeneralPromotionLocal = useCallback(async (promoId) => {
+    try {
+      await deleteGeneralPromotion(promoId);
+      setGeneralPromotions(p => p.filter(gp => gp.id !== promoId));
+    } catch (err) {
+      console.error('deleteGeneralPromotion error:', err);
+    }
+  }, []);
+
+  return { events, loading, addEvent, updateEvent, deleteEvent, generalPromotions, addGeneralPromotion, deleteGeneralPromotionLocal };
 }
 
 export function useTheme() {

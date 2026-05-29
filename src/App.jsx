@@ -1,10 +1,11 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, BarChart3, Sun, Moon, Printer } from 'lucide-react';
+import { CalendarDays, BarChart3, Zap, Sun, Moon, Printer } from 'lucide-react';
 import { format } from 'date-fns';
 import DateBar from './components/DateBar';
 import DayView from './components/DayView';
 import SummaryView from './components/SummaryView';
+import GeneralPromotionsView from './components/GeneralPromotionsView';
 import { useStore, useTheme } from './hooks/useStore';
 import { matches } from './data/matches';
 
@@ -15,14 +16,15 @@ function getDefault() {
 }
 
 const TABS = [
-  { id: 'day',     label: 'Calendário', icon: CalendarDays },
-  { id: 'summary', label: 'Resumo',     icon: BarChart3 },
+  { id: 'day',      label: 'Calendário', icon: CalendarDays },
+  { id: 'summary',  label: 'Resumo',     icon: BarChart3 },
+  { id: 'general',  label: 'Geral',      icon: Zap },
 ];
 
 export default function App() {
   const [tab, setTab] = useState('day');
   const [date, setDate] = useState(getDefault);
-  const { events, addEvent, updateEvent, deleteEvent } = useStore();
+  const { events, addEvent, updateEvent, deleteEvent, generalPromotions, addGeneralPromotion, deleteGeneralPromotionLocal } = useStore();
   const { theme, toggle } = useTheme();
 
   return (
@@ -150,8 +152,19 @@ export default function App() {
                   </h1>
                   <p style={{ fontSize: 14, color: 'var(--t2)', marginTop: 6 }}>Todos os eventos cadastrados na Copa 2026</p>
                 </div>
-                <SummaryView events={events} onDelete={deleteEvent} onUpdate={updateEvent} />
+                <SummaryView events={events} onDelete={deleteEvent} onUpdate={updateEvent} generalPromotions={generalPromotions} />
               </div>
+            </motion.div>
+          )}
+          {tab === 'general' && (
+            <motion.div key="gen"
+              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }} transition={{ duration: .14 }}>
+              <GeneralPromotionsView
+                generalPromotions={generalPromotions}
+                onAdd={addGeneralPromotion}
+                onDelete={deleteGeneralPromotionLocal}
+              />
             </motion.div>
           )}
         </AnimatePresence>

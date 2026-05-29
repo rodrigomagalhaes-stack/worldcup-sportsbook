@@ -60,3 +60,32 @@ export async function deleteEvent(evId) {
     .eq('id', evId);
   if (error) throw error;
 }
+
+// ── General Promotions ──────────────────────────────────────
+
+export async function fetchGeneralPromotions() {
+  const { data, error } = await supabase
+    .from('general_promotions')
+    .select('*')
+    .order('created_at', { ascending: false });
+  if (error) throw error;
+  return data;
+}
+
+export async function insertGeneralPromotion(promo) {
+  const { data, error } = await supabase
+    .from('general_promotions')
+    .insert(promo)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteGeneralPromotion(promoId) {
+  const { error } = await supabase
+    .from('general_promotions')
+    .delete()
+    .eq('id', promoId);
+  if (error) throw error;
+}

@@ -6,7 +6,7 @@ import { matches, promoTypes } from '../data/matches';
 import Flag from './Flag';
 import EventDetailModal from './EventDetailModal';
 
-export default function SummaryView({ events, onDelete }) {
+export default function SummaryView({ events, onDelete, generalPromotions }) {
   const [selectedEventDetail, setSelectedEventDetail] = useState(null); // { event, match }
 
   const summary = useMemo(() => {
@@ -61,6 +61,36 @@ export default function SummaryView({ events, onDelete }) {
           </div>
         ))}
       </div>
+
+      {/* General Promotions Section */}
+      {generalPromotions && generalPromotions.length > 0 && (
+        <div style={{ marginBottom: 32 }}>
+          <h2 style={{ fontSize: 14, fontWeight: 700, color: 'var(--t1)', marginBottom: 16, display: 'flex', alignItems: 'center', gap: 8 }}>
+            ⚡ Promoções Gerais ({generalPromotions.length})
+          </h2>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            {generalPromotions.map(gp => {
+              const type = promoTypes.find(t => t.id === gp.type);
+              return (
+                <div key={gp.id} style={{
+                  display: 'flex', gap: 10, alignItems: 'flex-start', padding: '10px 14px',
+                  background: 'var(--bg)', borderRadius: 'var(--radius-xs)', borderLeft: `4px solid ${type?.color || '#888'}`
+                }}>
+                  <span style={{ fontSize: 18 }}>{type?.icon}</span>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', gap: 8, alignItems: 'center', marginBottom: 3, flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: type?.color || '#888', background: `${type?.color || '#888'}18`, padding: '2px 9px', borderRadius: 99 }}>{type?.label || 'Tipo'}</span>
+                      <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--t1)' }}>{gp.title}</span>
+                    </div>
+                    {gp.description && <p style={{ fontSize: 12, color: 'var(--t2)' }}>{gp.description}</p>}
+                    {gp.rules && <p style={{ fontSize: 11, color: 'var(--t3)', marginTop: 4, fontStyle: 'italic' }}>📜 {gp.rules}</p>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Timeline */}
       <div style={{ display:'flex', flexDirection:'column', gap:28 }}>
