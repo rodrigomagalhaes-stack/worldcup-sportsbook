@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Plus, Trash2, Edit3, Check } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { promoTypes } from '../data/matches';
 import EventDetailModal from './EventDetailModal';
 
@@ -164,6 +164,14 @@ export default function EventModal({ match, events, onAdd, onDelete, onUpdate, o
   const [editing, setEditing] = useState(null);
   const [selectedEventDetail, setSelectedEventDetail] = useState(null);
 
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
+
   return (
     <AnimatePresence>
       {/* Overlay */}
@@ -234,7 +242,9 @@ export default function EventModal({ match, events, onAdd, onDelete, onUpdate, o
                 </span>
               </div>
             </div>
-            <button onClick={onClose}
+            <button
+              onClick={onClose}
+              aria-label={`Fechar modal de eventos para ${match.home} vs ${match.away}`}
               style={{
                 width: 32, height: 32, borderRadius: 8, border: '1px solid var(--line2)',
                 background: 'var(--bg)', color: 'var(--t2)', cursor: 'pointer',

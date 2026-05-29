@@ -1,9 +1,18 @@
 import { AnimatePresence, motion } from 'framer-motion';
 import { X, Trash2, Edit3 } from 'lucide-react';
+import { useEffect } from 'react';
 import { promoTypes } from '../data/matches';
 
 export default function EventDetailModal({ event, onClose, onDelete, onEdit }) {
   const type = promoTypes.find(t => t.id === event.type);
+
+  useEffect(() => {
+    const handleEscape = (e) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleEscape);
+    return () => document.removeEventListener('keydown', handleEscape);
+  }, [onClose]);
 
   return (
     <AnimatePresence>
@@ -48,7 +57,7 @@ export default function EventDetailModal({ event, onClose, onDelete, onEdit }) {
           <div style={{
             padding: '20px 24px',
             borderBottom: `3px solid ${type?.color || '#888'}`,
-            background: (type?.color || '#888') + '08',
+            background: `${type?.color || '#888'}08`,
             display: 'flex', alignItems: 'center', gap: 14, flexShrink: 0,
           }}>
             <div style={{ flex: 1, minWidth: 0 }}>
@@ -58,16 +67,18 @@ export default function EventDetailModal({ event, onClose, onDelete, onEdit }) {
                 </span>
                 <span style={{
                   fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99,
-                  background: type?.color + '18', color: type?.color,
+                  background: `${type?.color || '#888'}18`, color: type?.color || '#888',
                 }}>
-                  {type?.label}
+                  {type?.label || 'Tipo desconhecido'}
                 </span>
               </div>
               <div style={{ fontSize: 16, fontWeight: 800, color: 'var(--t1)', lineHeight: 1.3 }}>
                 {event.title}
               </div>
             </div>
-            <button onClick={onClose}
+            <button
+              onClick={onClose}
+              aria-label="Fechar detalhes do evento"
               style={{
                 width: 32, height: 32, borderRadius: 8, border: '1px solid var(--line2)',
                 background: 'var(--bg)', color: 'var(--t2)', cursor: 'pointer',
@@ -115,8 +126,8 @@ export default function EventDetailModal({ event, onClose, onDelete, onEdit }) {
                 </p>
                 <div style={{
                   padding: '14px 16px', borderRadius: 12,
-                  background: 'var(--bg)', border: `1px solid ${type?.color}28`,
-                  borderLeft: `3px solid ${type?.color}`,
+                  background: 'var(--bg)', border: `1px solid ${type?.color || '#888'}28`,
+                  borderLeft: `3px solid ${type?.color || '#888'}`,
                   fontSize: 13, color: 'var(--t1)', lineHeight: 1.6,
                   whiteSpace: 'pre-wrap', wordBreak: 'break-word',
                 }}>
@@ -133,8 +144,8 @@ export default function EventDetailModal({ event, onClose, onDelete, onEdit }) {
                 display: 'flex', gap: 16,
               }}>
                 <div>
-                  <span style={{ fontWeight: 600 }}>Criado:</span> {new Date(event.created_at).toLocaleDateString('pt-BR', {
-                    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit'
+                  <span style={{ fontWeight: 600 }}>Criado:</span> {new Date(event.created_at).toLocaleString('pt-BR', {
+                    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit'
                   })}
                 </div>
               </div>
@@ -148,7 +159,9 @@ export default function EventDetailModal({ event, onClose, onDelete, onEdit }) {
             background: 'var(--card)',
             display: 'flex', gap: 10, justifyContent: 'flex-end', flexShrink: 0,
           }}>
-            <button onClick={onEdit}
+            <button
+              onClick={onEdit}
+              aria-label={`Editar evento: ${event.title}`}
               style={{
                 padding: '8px 16px', borderRadius: 'var(--radius-xs)',
                 border: '1.5px solid var(--gold-line)', background: 'var(--gold-bg)',
@@ -161,7 +174,9 @@ export default function EventDetailModal({ event, onClose, onDelete, onEdit }) {
               <Edit3 size={13} />
               Editar
             </button>
-            <button onClick={onDelete}
+            <button
+              onClick={onDelete}
+              aria-label={`Deletar evento: ${event.title}`}
               style={{
                 padding: '8px 16px', borderRadius: 'var(--radius-xs)',
                 border: '1.5px solid rgba(239,68,68,0.3)', background: 'rgba(239,68,68,0.08)',

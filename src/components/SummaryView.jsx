@@ -6,7 +6,7 @@ import { matches, promoTypes } from '../data/matches';
 import Flag from './Flag';
 import EventDetailModal from './EventDetailModal';
 
-export default function SummaryView({ events, onDelete, onUpdate }) {
+export default function SummaryView({ events, onDelete }) {
   const [selectedEventDetail, setSelectedEventDetail] = useState(null); // { event, match }
 
   const summary = useMemo(() => {
@@ -96,14 +96,14 @@ export default function SummaryView({ events, onDelete, onUpdate }) {
                       const type = promoTypes.find(t=>t.id===ev.type);
                       return (
                         <div key={ev.id} onClick={() => setSelectedEventDetail({ event: ev, match })} style={{ display:'flex', gap:10, alignItems:'flex-start', padding:'10px 14px',
-                          background:'var(--bg)', borderRadius:'var(--radius-xs)', borderLeft:`4px solid ${type?.color}`,
+                          background:'var(--bg)', borderRadius:'var(--radius-xs)', borderLeft:`4px solid ${type?.color || '#888'}`,
                           cursor:'pointer', transition:'all .15s' }}
                           onMouseEnter={e => { e.currentTarget.style.background = 'var(--card2)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
                           onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.boxShadow = 'none'; }}>
                           <span style={{ fontSize:18 }}>{type?.icon}</span>
                           <div style={{ flex:1 }}>
                             <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:3, flexWrap:'wrap' }}>
-                              <span style={{ fontSize:11, fontWeight:700, color:type?.color, background:type?.color+'18', padding:'2px 9px', borderRadius:99 }}>{type?.label}</span>
+                              <span style={{ fontSize:11, fontWeight:700, color:type?.color || '#888', background:`${type?.color || '#888'}18`, padding:'2px 9px', borderRadius:99 }}>{type?.label || 'Desconhecido'}</span>
                               <span style={{ fontSize:14, fontWeight:700, color:'var(--t1)' }}>{ev.title}</span>
                             </div>
                             {ev.description && <p style={{ fontSize:12, color:'var(--t2)' }}>{ev.description}</p>}
