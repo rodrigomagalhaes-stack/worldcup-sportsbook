@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { promoTypes } from '../data/matches';
+import GeneralPromotionDetailModal from './GeneralPromotionDetailModal';
 
 function GeneralPromotionForm({ onSave, onCancel }) {
   const [f, setF] = useState({
@@ -111,14 +112,19 @@ function GeneralPromotionForm({ onSave, onCancel }) {
   );
 }
 
-function GeneralPromotionRow({ promotion, onDelete }) {
+function GeneralPromotionRow({ promotion, onDelete, onClick }) {
   const type = promoTypes.find(t => t.id === promotion.type);
   return (
-    <div style={{
-      display: 'flex', alignItems: 'flex-start', gap: 12,
-      padding: '12px 14px', background: 'var(--bg)',
-      borderRadius: 12, borderLeft: `3px solid ${type?.color || '#888'}`,
-    }}>
+    <div
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'flex-start', gap: 12,
+        padding: '12px 14px', background: 'var(--bg)',
+        borderRadius: 12, borderLeft: `3px solid ${type?.color || '#888'}`,
+        cursor: 'pointer', transition: 'all .15s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'var(--card2)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.boxShadow = 'none'; }}>
       <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>{type?.icon}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 3 }}>
@@ -134,7 +140,11 @@ function GeneralPromotionRow({ promotion, onDelete }) {
           </div>
         )}
       </div>
-      <button onClick={onDelete}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          onDelete();
+        }}
         aria-label={`Deletar promoção: ${promotion.title}`}
         style={{ padding: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, transition: 'color .12s', display: 'flex', flexShrink: 0 }}
         onMouseEnter={e => e.currentTarget.style.color = 'var(--red)'}
@@ -147,6 +157,7 @@ function GeneralPromotionRow({ promotion, onDelete }) {
 
 export default function GeneralPromotionsView({ generalPromotions, onAdd, onDelete }) {
   const [showForm, setShowForm] = useState(false);
+  const [selectedPromotion, setSelectedPromotion] = useState(null);
 
   if (!showForm && generalPromotions.length === 0) {
     return (
@@ -190,7 +201,8 @@ export default function GeneralPromotionsView({ generalPromotions, onAdd, onDele
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {generalPromotions.map(promo => (
               <GeneralPromotionRow key={promo.id} promotion={promo}
-                onDelete={() => onDelete(promo.id)} />
+                onDelete={() => onDelete(promo.id)}
+                onClick={() => setSelectedPromotion(promo)} />
             ))}
           </div>
         </div>
@@ -228,6 +240,18 @@ export default function GeneralPromotionsView({ generalPromotions, onAdd, onDele
             onCancel={() => setShowForm(false)}
           />
         </div>
+      )}
+
+      {/* Promotion Detail Modal */}
+      {selectedPromotion && (
+        <GeneralPromotionDetailModal
+          promotion={selectedPromotion}
+          onClose={() => setSelectedPromotion(null)}
+          onDelete={() => {
+            onDelete(selectedPromotion.id);
+            setSelectedPromotion(null);
+          }}
+        />
       )}
     </div>
   );
