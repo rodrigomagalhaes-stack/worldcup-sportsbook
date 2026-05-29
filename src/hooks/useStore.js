@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchAllEvents, insertEvent, updateEvent as sbUpdate, deleteEvent as sbDelete, fetchGeneralPromotions, insertGeneralPromotion, deleteGeneralPromotion } from '../lib/supabase';
+import { fetchAllEvents, insertEvent, updateEvent as sbUpdate, deleteEvent as sbDelete, fetchGeneralPromotions, insertGeneralPromotion, updateGeneralPromotion as sbUpdateGP, deleteGeneralPromotion } from '../lib/supabase';
 
 export function useStore() {
   const [events, setEvents] = useState({});
@@ -57,6 +57,15 @@ export function useStore() {
     }
   }, []);
 
+  const updateGeneralPromotionLocal = useCallback(async (promoId, upd) => {
+    try {
+      const saved = await sbUpdateGP(promoId, upd);
+      setGeneralPromotions(p => p.map(gp => gp.id === promoId ? saved : gp));
+    } catch (err) {
+      console.error('updateGeneralPromotion error:', err);
+    }
+  }, []);
+
   const deleteGeneralPromotionLocal = useCallback(async (promoId) => {
     try {
       await deleteGeneralPromotion(promoId);
@@ -66,7 +75,7 @@ export function useStore() {
     }
   }, []);
 
-  return { events, loading, addEvent, updateEvent, deleteEvent, generalPromotions, addGeneralPromotion, deleteGeneralPromotionLocal };
+  return { events, loading, addEvent, updateEvent, deleteEvent, generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal };
 }
 
 export function useTheme() {

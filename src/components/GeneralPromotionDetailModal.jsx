@@ -1,9 +1,9 @@
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Trash2 } from 'lucide-react';
+import { X, Trash2, Edit3 } from 'lucide-react';
 import { useEffect } from 'react';
 import { promoTypes } from '../data/matches';
 
-export default function GeneralPromotionDetailModal({ promotion, onClose, onDelete }) {
+export default function GeneralPromotionDetailModal({ promotion, onClose, onEdit, onDelete }) {
   const type = promoTypes.find(t => t.id === promotion.type);
 
   useEffect(() => {
@@ -159,6 +159,21 @@ export default function GeneralPromotionDetailModal({ promotion, onClose, onDele
             background: 'var(--card)',
             display: 'flex', gap: 10, justifyContent: 'flex-end', flexShrink: 0,
           }}>
+            <button
+              onClick={onEdit}
+              aria-label={`Editar promoção: ${promotion.title}`}
+              style={{
+                padding: '8px 16px', borderRadius: 'var(--radius-xs)',
+                border: '1.5px solid var(--gold-line)', background: 'var(--gold-bg)',
+                color: 'var(--gold)', cursor: 'pointer', fontSize: 12, fontWeight: 700,
+                display: 'flex', alignItems: 'center', gap: 6,
+                transition: 'all .15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--gold)'; e.currentTarget.style.color = '#000'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'var(--gold-bg)'; e.currentTarget.style.color = 'var(--gold)'; }}>
+              <Edit3 size={13} />
+              Editar
+            </button>
             <button
               onClick={onDelete}
               aria-label={`Deletar promoção: ${promotion.title}`}

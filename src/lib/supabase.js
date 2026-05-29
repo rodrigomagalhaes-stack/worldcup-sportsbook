@@ -82,6 +82,17 @@ export async function insertGeneralPromotion(promo) {
   return data;
 }
 
+export async function updateGeneralPromotion(promoId, updates) {
+  const { data, error } = await supabase
+    .from('general_promotions')
+    .update(updates)
+    .eq('id', promoId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
 export async function deleteGeneralPromotion(promoId) {
   const { error } = await supabase
     .from('general_promotions')

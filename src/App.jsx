@@ -24,7 +24,7 @@ const TABS = [
 export default function App() {
   const [tab, setTab] = useState('day');
   const [date, setDate] = useState(getDefault);
-  const { events, addEvent, updateEvent, deleteEvent, generalPromotions, addGeneralPromotion, deleteGeneralPromotionLocal } = useStore();
+  const { events, addEvent, updateEvent, deleteEvent, generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal } = useStore();
   const { theme, toggle } = useTheme();
 
   return (
@@ -163,6 +163,7 @@ export default function App() {
               <GeneralPromotionsView
                 generalPromotions={generalPromotions}
                 onAdd={addGeneralPromotion}
+                onUpdate={updateGeneralPromotionLocal}
                 onDelete={deleteGeneralPromotionLocal}
               />
             </motion.div>
