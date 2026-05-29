@@ -1,11 +1,14 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { motion } from 'framer-motion';
 import { matches, promoTypes } from '../data/matches';
 import Flag from './Flag';
+import EventDetailModal from './EventDetailModal';
 
-export default function SummaryView({ events }) {
+export default function SummaryView({ events, onDelete, onUpdate }) {
+  const [selectedEventDetail, setSelectedEventDetail] = useState(null); // { event, match }
+
   const summary = useMemo(() => {
     const bd = {};
     matches.forEach(m => {
@@ -92,8 +95,11 @@ export default function SummaryView({ events }) {
                     {evs.map(ev => {
                       const type = promoTypes.find(t=>t.id===ev.type);
                       return (
-                        <div key={ev.id} style={{ display:'flex', gap:10, alignItems:'flex-start', padding:'10px 14px',
-                          background:'var(--bg)', borderRadius:'var(--radius-xs)', borderLeft:`4px solid ${type?.color}` }}>
+                        <div key={ev.id} onClick={() => setSelectedEventDetail({ event: ev, match })} style={{ display:'flex', gap:10, alignItems:'flex-start', padding:'10px 14px',
+                          background:'var(--bg)', borderRadius:'var(--radius-xs)', borderLeft:`4px solid ${type?.color}`,
+                          cursor:'pointer', transition:'all .15s' }}
+                          onMouseEnter={e => { e.currentTarget.style.background = 'var(--card2)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+                          onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.boxShadow = 'none'; }}>
                           <span style={{ fontSize:18 }}>{type?.icon}</span>
                           <div style={{ flex:1 }}>
                             <div style={{ display:'flex', gap:8, alignItems:'center', marginBottom:3, flexWrap:'wrap' }}>
@@ -113,6 +119,25 @@ export default function SummaryView({ events }) {
           </motion.div>
         ))}
       </div>
+
+      {/* Event Detail Modal */}
+      {selectedEventDetail && (
+        <EventDetailModal
+          event={selectedEventDetail.event}
+          onClose={() => setSelectedEventDetail(null)}
+          onDelete={() => {
+            if (onDelete) {
+              onDelete(selectedEventDetail.match.id, selectedEventDetail.event.id);
+              setSelectedEventDetail(null);
+            }
+          }}
+          onEdit={() => {
+            // In summary view, editing would require opening the event modal for that match
+            // For now, we'll just close the detail modal
+            setSelectedEventDetail(null);
+          }}
+        />
+      )}
     </div>
   );
 }

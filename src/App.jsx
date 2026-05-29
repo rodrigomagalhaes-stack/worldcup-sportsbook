@@ -150,7 +150,7 @@ export default function App() {
                   </h1>
                   <p style={{ fontSize: 14, color: 'var(--t2)', marginTop: 6 }}>Todos os eventos cadastrados na Copa 2026</p>
                 </div>
-                <SummaryView events={events} />
+                <SummaryView events={events} onDelete={deleteEvent} onUpdate={updateEvent} />
               </div>
             </motion.div>
           )}

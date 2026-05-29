@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { X, Plus, Trash2, Edit3, Check } from 'lucide-react';
 import { useState } from 'react';
 import { promoTypes } from '../data/matches';
+import EventDetailModal from './EventDetailModal';
 
 function EventForm({ initial, onSave, onCancel }) {
   const [f, setF] = useState({
@@ -112,14 +113,19 @@ function EventForm({ initial, onSave, onCancel }) {
   );
 }
 
-function EventRow({ event, onDelete, onEdit }) {
+function EventRow({ event, onDelete, onEdit, onClick }) {
   const type = promoTypes.find(t => t.id === event.type);
   return (
-    <div style={{
-      display: 'flex', alignItems: 'flex-start', gap: 12,
-      padding: '12px 14px', background: 'var(--bg)',
-      borderRadius: 12, borderLeft: `3px solid ${type?.color || '#888'}`,
-    }}>
+    <div
+      onClick={onClick}
+      style={{
+        display: 'flex', alignItems: 'flex-start', gap: 12,
+        padding: '12px 14px', background: 'var(--bg)',
+        borderRadius: 12, borderLeft: `3px solid ${type?.color || '#888'}`,
+        cursor: 'pointer', transition: 'all .15s',
+      }}
+      onMouseEnter={e => { e.currentTarget.style.background = 'var(--card2)'; e.currentTarget.style.boxShadow = 'var(--shadow-sm)'; }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg)'; e.currentTarget.style.boxShadow = 'none'; }}>
       <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>{type?.icon}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 3 }}>
@@ -135,7 +141,7 @@ function EventRow({ event, onDelete, onEdit }) {
           </div>
         )}
       </div>
-      <div style={{ display: 'flex', gap: 2, flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: 2, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
         <button onClick={onEdit}
           style={{ padding: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, transition: 'color .12s', display: 'flex' }}
           onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'}
@@ -156,6 +162,7 @@ function EventRow({ event, onDelete, onEdit }) {
 export default function EventModal({ match, events, onAdd, onDelete, onUpdate, onClose, groupColor }) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
+  const [selectedEventDetail, setSelectedEventDetail] = useState(null);
 
   return (
     <AnimatePresence>
@@ -252,6 +259,7 @@ export default function EventModal({ match, events, onAdd, onDelete, onUpdate, o
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                   {events.map(ev => (
                     <EventRow key={ev.id} event={ev}
+                      onClick={() => setSelectedEventDetail(ev)}
                       onDelete={() => onDelete(match.id, ev.id)}
                       onEdit={() => { setEditing(ev); setShowForm(true); }} />
                   ))}
@@ -296,6 +304,23 @@ export default function EventModal({ match, events, onAdd, onDelete, onUpdate, o
           </div>
         </motion.div>
       </motion.div>
+
+      {/* Event Detail Modal */}
+      {selectedEventDetail && (
+        <EventDetailModal
+          event={selectedEventDetail}
+          onClose={() => setSelectedEventDetail(null)}
+          onDelete={() => {
+            onDelete(match.id, selectedEventDetail.id);
+            setSelectedEventDetail(null);
+          }}
+          onEdit={() => {
+            setEditing(selectedEventDetail);
+            setShowForm(true);
+            setSelectedEventDetail(null);
+          }}
+        />
+      )}
     </AnimatePresence>
   );
 }
