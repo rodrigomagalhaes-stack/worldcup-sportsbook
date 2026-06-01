@@ -193,7 +193,9 @@ export default function App() {
               exit={{ opacity: 0, y: -6 }} transition={{ duration: .14 }}>
               <DayView selectedDate={date} events={events} onAdd={addEvent} onDelete={deleteEvent} onUpdate={updateEvent}
                 dayPromoActive={promosForDate.length > 0}
-                onOpenDayPromo={() => setDrawerOpen(true)} />
+                onOpenDayPromo={() => setDrawerOpen(true)}
+                promos={promosForDate}
+                onOpenDrawer={() => setDrawerOpen(true)} />
             </motion.div>
           )}
           {tab === 'summary' && (

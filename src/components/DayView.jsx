@@ -5,8 +5,9 @@ import { ptBR } from 'date-fns/locale';
 import { CalendarDays } from 'lucide-react';
 import { matches } from '../data/matches';
 import MatchCard from './MatchCard';
+import DayPromoBanner from './DayPromoBanner';
 
-export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo }) {
+export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, promos = [], onOpenDrawer }) {
   // Ordenação: madrugada (01/02h) vem ANTES dos demais
   const dayMatches = useMemo(() =>
     matches
@@ -76,6 +77,13 @@ export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdat
           </div>
         </div>
       </div>
+
+      {/* Banner de promoções do dia */}
+      <DayPromoBanner
+        promos={promos}
+        dayMatches={dayMatches}
+        onOpen={onOpenDrawer || onOpenDayPromo}
+      />
 
       {/* Cards — grid direto, sem agrupamento por período */}
       {dayMatches.length === 0 ? (
