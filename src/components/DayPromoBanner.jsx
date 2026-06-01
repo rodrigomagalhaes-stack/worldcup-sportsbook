@@ -2,17 +2,19 @@ import { useState } from 'react';
 import { Megaphone, Plus, ChevronRight } from 'lucide-react';
 import { promoTypes } from '../data/matches';
 import Flag from './Flag';
+import DayPromoDetailModal from './DayPromoDetailModal';
 
 /* ─────────────────────────────────────────────────────────────
    FeaturedPromo — card de UMA promoção do dia em destaque
+   onClick => abre modal de detalhe (não o drawer)
 ───────────────────────────────────────────────────────────── */
-function FeaturedPromo({ promo, dayMatches, onOpen }) {
+function FeaturedPromo({ promo, dayMatches, onOpenModal }) {
   const [hovered, setHovered] = useState(false);
   const type = promoTypes.find(t => t.id === promo.type);
 
   return (
     <div
-      onClick={onOpen}
+      onClick={onOpenModal}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       style={{
@@ -20,13 +22,13 @@ function FeaturedPromo({ promo, dayMatches, onOpen }) {
         minWidth: 0,
         background: 'var(--card)',
         borderRadius: 'var(--radius)',
-        borderLeft: `5px solid ${type?.color || 'var(--green)'}`,
         border: `1px solid var(--line)`,
         borderLeftWidth: 5,
         borderLeftColor: type?.color || 'var(--green)',
+        borderLeftStyle: 'solid',
         boxShadow: hovered ? 'var(--shadow)' : 'var(--shadow-sm)',
         transform: hovered ? 'translateY(-2px)' : 'none',
-        transition: 'box-shadow .2s ease, transform .2s ease',
+        transition: 'box-shadow .2s ease, transform .2s ease, border-color .2s',
         cursor: 'pointer',
         display: 'flex',
         flexDirection: 'column',
@@ -83,7 +85,7 @@ function FeaturedPromo({ promo, dayMatches, onOpen }) {
         )}
       </div>
 
-      {/* Rodapé: bandeiras + CTA */}
+      {/* Rodapé: bandeiras + CTA "Ver detalhes" */}
       <div style={{
         padding: 'clamp(8px,1vw,10px) clamp(14px,2vw,18px)',
         background: 'var(--green-bg)',
@@ -113,7 +115,7 @@ function FeaturedPromo({ promo, dayMatches, onOpen }) {
           fontSize: 11, fontWeight: 700, color: 'var(--green-dark)',
           whiteSpace: 'nowrap', flexShrink: 0,
         }}>
-          Gerenciar <ChevronRight size={13} />
+          Ver detalhes <ChevronRight size={13} />
         </span>
       </div>
     </div>
@@ -123,7 +125,9 @@ function FeaturedPromo({ promo, dayMatches, onOpen }) {
 /* ─────────────────────────────────────────────────────────────
    DayPromoBanner — faixa completa que agrupa os cards
 ───────────────────────────────────────────────────────────── */
-export default function DayPromoBanner({ promos, dayMatches, onOpen }) {
+export default function DayPromoBanner({ promos, dayMatches, onOpen, onDeletePromo }) {
+  const [selectedPromo, setSelectedPromo] = useState(null);
+
   /* Estado vazio — faixa tracejada */
   if (!promos || promos.length === 0) {
     return (
@@ -153,10 +157,7 @@ export default function DayPromoBanner({ promos, dayMatches, onOpen }) {
         <span style={{ fontSize: 'clamp(28px,4vw,36px)', lineHeight: 1, flexShrink: 0 }}>🎯</span>
 
         <div style={{ flex: 1, minWidth: 180 }}>
-          <p style={{
-            fontSize: 'clamp(13px,1.4vw,15px)', fontWeight: 700,
-            color: 'var(--t1)', marginBottom: 3,
-          }}>
+          <p style={{ fontSize: 'clamp(13px,1.4vw,15px)', fontWeight: 700, color: 'var(--t1)', marginBottom: 3 }}>
             Nenhuma promoção do dia ainda
           </p>
           <p style={{ fontSize: 'clamp(11px,1.1vw,12.5px)', color: 'var(--t3)' }}>
@@ -175,8 +176,7 @@ export default function DayPromoBanner({ promos, dayMatches, onOpen }) {
             border: 'none', background: 'var(--green)', color: '#fff',
             cursor: 'pointer', fontSize: 'clamp(11px,1.1vw,13px)', fontWeight: 700,
             boxShadow: '0 4px 14px rgba(22,196,127,0.35)',
-            transition: 'background .15s',
-            flexShrink: 0,
+            transition: 'background .15s', flexShrink: 0,
           }}
           onMouseEnter={e => e.currentTarget.style.background = 'var(--green-mid)'}
           onMouseLeave={e => e.currentTarget.style.background = 'var(--green)'}>
@@ -190,43 +190,45 @@ export default function DayPromoBanner({ promos, dayMatches, onOpen }) {
   const plural = promos.length > 1;
 
   return (
-    <div style={{ marginBottom: 'clamp(16px,2.5vw,28px)' }}>
+    <>
+      <div style={{ marginBottom: 'clamp(16px,2.5vw,28px)' }}>
 
-      {/* Cabeçalho da seção */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 7,
-        marginBottom: 'clamp(10px,1.2vw,14px)',
-      }}>
-        <Megaphone size={14} style={{ color: 'var(--green)', flexShrink: 0 }} />
-        <span style={{
-          fontSize: 10, fontWeight: 800, letterSpacing: '0.08em',
-          textTransform: 'uppercase', color: 'var(--t3)',
-        }}>
-          {plural ? 'Promoções do dia' : 'Promoção do dia'}
-        </span>
-        <span style={{
-          fontSize: 10, fontWeight: 700,
-          padding: '1px 7px', borderRadius: 99,
-          background: 'var(--green)', color: '#fff',
-        }}>
-          {promos.length}/2
-        </span>
+        {/* Cabeçalho da seção */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 7, marginBottom: 'clamp(10px,1.2vw,14px)' }}>
+          <Megaphone size={14} style={{ color: 'var(--green)', flexShrink: 0 }} />
+          <span style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--t3)' }}>
+            {plural ? 'Promoções do dia' : 'Promoção do dia'}
+          </span>
+          <span style={{ fontSize: 10, fontWeight: 700, padding: '1px 7px', borderRadius: 99, background: 'var(--green)', color: '#fff' }}>
+            {promos.length}/2
+          </span>
+        </div>
+
+        {/* Cards lado a lado (flex-wrap) */}
+        <div style={{ display: 'flex', gap: 'clamp(10px,1.5vw,16px)', flexWrap: 'wrap', alignItems: 'stretch' }}>
+          {promos.map(p => (
+            <FeaturedPromo
+              key={p.id}
+              promo={p}
+              dayMatches={dayMatches}
+              onOpenModal={() => setSelectedPromo(p)}
+            />
+          ))}
+        </div>
       </div>
 
-      {/* Cards lado a lado (flex-wrap) */}
-      <div style={{
-        display: 'flex', gap: 'clamp(10px,1.5vw,16px)',
-        flexWrap: 'wrap', alignItems: 'stretch',
-      }}>
-        {promos.map(p => (
-          <FeaturedPromo
-            key={p.id}
-            promo={p}
-            dayMatches={dayMatches}
-            onOpen={onOpen}
-          />
-        ))}
-      </div>
-    </div>
+      {/* Modal de detalhe — abre ao clicar no card */}
+      {selectedPromo && (
+        <DayPromoDetailModal
+          promo={selectedPromo}
+          dayMatches={dayMatches}
+          onClose={() => setSelectedPromo(null)}
+          onDelete={() => {
+            onDeletePromo?.(selectedPromo.id);
+            setSelectedPromo(null);
+          }}
+        />
+      )}
+    </>
   );
 }
