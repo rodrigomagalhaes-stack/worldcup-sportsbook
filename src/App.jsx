@@ -195,7 +195,6 @@ export default function App() {
                 dayPromoActive={promosForDate.length > 0}
                 onOpenDayPromo={() => setDrawerOpen(true)}
                 promos={promosForDate}
-                onOpenDrawer={() => setDrawerOpen(true)}
                 onDeleteDayPromo={deleteDayPromotionLocal} />
             </motion.div>
           )}

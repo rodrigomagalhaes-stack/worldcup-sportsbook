@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Megaphone, Plus, ChevronRight } from 'lucide-react';
+import { Megaphone, ChevronRight } from 'lucide-react';
 import { promoTypes } from '../data/matches';
 import Flag from './Flag';
 import DayPromoDetailModal from './DayPromoDetailModal';
@@ -125,66 +125,11 @@ function FeaturedPromo({ promo, dayMatches, onOpenModal }) {
 /* ─────────────────────────────────────────────────────────────
    DayPromoBanner — faixa completa que agrupa os cards
 ───────────────────────────────────────────────────────────── */
-export default function DayPromoBanner({ promos, dayMatches, onOpen, onDeletePromo }) {
+export default function DayPromoBanner({ promos, dayMatches, onDeletePromo }) {
   const [selectedPromo, setSelectedPromo] = useState(null);
 
-  /* Estado vazio — faixa tracejada */
-  if (!promos || promos.length === 0) {
-    return (
-      <div
-        onClick={onOpen}
-        style={{
-          marginBottom: 'clamp(16px,2.5vw,28px)',
-          padding: 'clamp(16px,2.5vw,22px) clamp(18px,3vw,28px)',
-          borderRadius: 'var(--radius)',
-          border: '2px dashed var(--line2)',
-          background: 'var(--card2)',
-          cursor: 'pointer',
-          display: 'flex', alignItems: 'center',
-          gap: 'clamp(12px,2vw,20px)',
-          flexWrap: 'wrap',
-          transition: 'border-color .15s, background .15s',
-        }}
-        onMouseEnter={e => {
-          e.currentTarget.style.borderColor = 'var(--green)';
-          e.currentTarget.style.background = 'var(--green-bg)';
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.borderColor = 'var(--line2)';
-          e.currentTarget.style.background = 'var(--card2)';
-        }}>
-
-        <span style={{ fontSize: 'clamp(28px,4vw,36px)', lineHeight: 1, flexShrink: 0 }}>🎯</span>
-
-        <div style={{ flex: 1, minWidth: 180 }}>
-          <p style={{ fontSize: 'clamp(13px,1.4vw,15px)', fontWeight: 700, color: 'var(--t1)', marginBottom: 3 }}>
-            Nenhuma promoção do dia ainda
-          </p>
-          <p style={{ fontSize: 'clamp(11px,1.1vw,12.5px)', color: 'var(--t3)' }}>
-            Crie uma promoção que vale para os{' '}
-            <strong style={{ color: 'var(--t2)' }}>{dayMatches.length} {dayMatches.length === 1 ? 'jogo' : 'jogos'}</strong>{' '}
-            deste dia.
-          </p>
-        </div>
-
-        <button
-          onClick={e => { e.stopPropagation(); onOpen(); }}
-          style={{
-            display: 'inline-flex', alignItems: 'center', gap: 6,
-            padding: 'clamp(8px,1vw,10px) clamp(14px,1.5vw,20px)',
-            borderRadius: 'var(--radius-s)',
-            border: 'none', background: 'var(--green)', color: '#fff',
-            cursor: 'pointer', fontSize: 'clamp(11px,1.1vw,13px)', fontWeight: 700,
-            boxShadow: '0 4px 14px rgba(22,196,127,0.35)',
-            transition: 'background .15s', flexShrink: 0,
-          }}
-          onMouseEnter={e => e.currentTarget.style.background = 'var(--green-mid)'}
-          onMouseLeave={e => e.currentTarget.style.background = 'var(--green)'}>
-          <Plus size={14} /> Criar promoção
-        </button>
-      </div>
-    );
-  }
+  /* Sem promoções — não renderiza nada */
+  if (!promos || promos.length === 0) return null;
 
   /* Com promoções — header + cards */
   const plural = promos.length > 1;
