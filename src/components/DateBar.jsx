@@ -6,7 +6,7 @@ import { matches } from '../data/matches';
 
 const DATES = [...new Set(matches.map(m => m.date))].sort();
 
-export default function DateBar({ selectedDate, onSelect, events }) {
+export default function DateBar({ selectedDate, onSelect, events, dayPromoCounts = {} }) {
   const scrollRef = useRef(null);
 
   useEffect(() => {
@@ -73,6 +73,7 @@ export default function DateBar({ selectedDate, onSelect, events }) {
           const today = isToday(p);
           const br = brasilDates.has(date);
           const ec = evCountByDate[date] || 0;
+          const dpc = dayPromoCounts[date] || 0;
           const dayMatchCount = matches.filter(m => m.date === date).length;
 
           return (
@@ -157,6 +158,20 @@ export default function DateBar({ selectedDate, onSelect, events }) {
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                 }}>
                   {ec}
+                </span>
+              )}
+
+              {/* Day-promo badge (promoção do dia) */}
+              {dpc > 0 && (
+                <span title="Promoções do dia" style={{
+                  position: 'absolute', top: 6, left: 5,
+                  width: 14, height: 14, borderRadius: 99,
+                  background: 'var(--green)', color: '#fff',
+                  fontSize: 8, fontWeight: 800,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: '0 0 0 2px var(--surface)',
+                }}>
+                  {dpc}
                 </span>
               )}
 

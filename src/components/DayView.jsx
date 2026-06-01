@@ -6,7 +6,7 @@ import { CalendarDays } from 'lucide-react';
 import { matches } from '../data/matches';
 import MatchCard from './MatchCard';
 
-export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate }) {
+export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo }) {
   // Ordenação: madrugada (01/02h) vem ANTES dos demais
   const dayMatches = useMemo(() =>
     matches
@@ -97,6 +97,8 @@ export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdat
                 match={m}
                 events={events[m.id] || []}
                 onAdd={onAdd} onDelete={onDelete} onUpdate={onUpdate}
+                dayPromoActive={dayPromoActive}
+                onOpenDayPromo={onOpenDayPromo}
               />
             </motion.div>
           ))}

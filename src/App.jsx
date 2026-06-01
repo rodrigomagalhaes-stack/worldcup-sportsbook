@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, BarChart3, Zap, Sun, Moon, Printer, Loader2 } from 'lucide-react';
+import { CalendarDays, BarChart3, Zap, Sun, Moon, Printer, Loader2, Megaphone } from 'lucide-react';
 import { format } from 'date-fns';
 import DateBar from './components/DateBar';
 import DayView from './components/DayView';
 import SummaryView from './components/SummaryView';
 import GeneralPromotionsView from './components/GeneralPromotionsView';
+import PromoDrawer from './components/PromoDrawer';
 import { useStore, useTheme } from './hooks/useStore';
 import { matches } from './data/matches';
 
@@ -24,8 +25,22 @@ const TABS = [
 export default function App() {
   const [tab, setTab] = useState('day');
   const [date, setDate] = useState(getDefault);
-  const { events, loading, addEvent, updateEvent, deleteEvent, generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal } = useStore();
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const {
+    events, loading, addEvent, updateEvent, deleteEvent,
+    generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal,
+    dayPromotions, addDayPromotion, deleteDayPromotionLocal, activateStandbyPromotion,
+  } = useStore();
   const { theme, toggle } = useTheme();
+
+  // ── Derivados das promoções do dia ──
+  const dayMatchesForDate = matches.filter(m => m.date === date);
+  const promosForDate = dayPromotions.filter(p => p.date === date && p.state === 'active');
+  const standbyForDate = dayPromotions.filter(p => p.date === date && p.state !== 'active');
+  const dayPromoCounts = {};
+  dayPromotions.forEach(p => {
+    if (p.state === 'active') dayPromoCounts[p.date] = (dayPromoCounts[p.date] || 0) + 1;
+  });
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100vh', background: 'var(--bg)' }}>
@@ -58,6 +73,30 @@ export default function App() {
               </div>
             </div>
           </div>
+
+          {/* Botão Promoções do dia */}
+          <button onClick={() => setDrawerOpen(true)} title="Promoções do dia"
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8, flexShrink: 0,
+              padding: '7px clamp(10px,1.5vw,16px)', borderRadius: 99,
+              border: '1.5px solid var(--green)', background: 'var(--green-bg)',
+              color: 'var(--green-dark)', cursor: 'pointer',
+              fontSize: 'clamp(11px,1.2vw,13px)', fontWeight: 700, transition: 'all .15s',
+            }}
+            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(22,196,127,0.14)'; }}
+            onMouseLeave={e => { e.currentTarget.style.background = 'var(--green-bg)'; }}>
+            <Megaphone size={14} />
+            <span>Promoções do dia</span>
+            {(dayPromoCounts[date] || 0) > 0 && (
+              <span style={{
+                minWidth: 18, height: 18, padding: '0 5px', borderRadius: 99,
+                background: 'var(--green)', color: '#fff', fontSize: 10, fontWeight: 800,
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {dayPromoCounts[date]}
+              </span>
+            )}
+          </button>
 
           {/* Divider */}
           <div style={{ width: 1, height: 28, background: 'var(--line2)', flexShrink: 0 }} />
@@ -127,7 +166,7 @@ export default function App() {
 
         {/* DateBar */}
         {tab === 'day' && (
-          <DateBar selectedDate={date} onSelect={setDate} events={events} />
+          <DateBar selectedDate={date} onSelect={setDate} events={events} dayPromoCounts={dayPromoCounts} />
         )}
       </header>
 
@@ -152,7 +191,9 @@ export default function App() {
             <motion.div key="day"
               initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -6 }} transition={{ duration: .14 }}>
-              <DayView selectedDate={date} events={events} onAdd={addEvent} onDelete={deleteEvent} onUpdate={updateEvent} />
+              <DayView selectedDate={date} events={events} onAdd={addEvent} onDelete={deleteEvent} onUpdate={updateEvent}
+                dayPromoActive={promosForDate.length > 0}
+                onOpenDayPromo={() => setDrawerOpen(true)} />
             </motion.div>
           )}
           {tab === 'summary' && (
@@ -185,6 +226,21 @@ export default function App() {
         </AnimatePresence>
         )}
       </main>
+
+      {/* Drawer — Promoções do dia */}
+      <PromoDrawer
+        open={drawerOpen}
+        onClose={() => setDrawerOpen(false)}
+        date={date}
+        dayMatches={dayMatchesForDate}
+        dayPromos={promosForDate}
+        standby={standbyForDate}
+        onAddDayPromo={data => addDayPromotion({ ...data, date, state: 'active' })}
+        onDeleteDayPromo={deleteDayPromotionLocal}
+        onAddStandby={data => addDayPromotion({ date, type: data.type, title: data.title, description: data.description, state: data.status || 'standby' })}
+        onDeleteStandby={deleteDayPromotionLocal}
+        onActivate={activateStandbyPromotion}
+      />
     </div>
   );
 }

@@ -100,3 +100,43 @@ export async function deleteGeneralPromotion(promoId) {
     .eq('id', promoId);
   if (error) throw error;
 }
+
+// ── Day Promotions (promoções do dia) ───────────────────────
+
+export async function fetchDayPromotions() {
+  const { data, error } = await supabase
+    .from('day_promotions')
+    .select('*')
+    .order('created_at', { ascending: true });
+  if (error) throw error;
+  return data;
+}
+
+export async function insertDayPromotion(promo) {
+  const { data, error } = await supabase
+    .from('day_promotions')
+    .insert(promo)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function updateDayPromotion(promoId, updates) {
+  const { data, error } = await supabase
+    .from('day_promotions')
+    .update(updates)
+    .eq('id', promoId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function deleteDayPromotion(promoId) {
+  const { error } = await supabase
+    .from('day_promotions')
+    .delete()
+    .eq('id', promoId);
+  if (error) throw error;
+}
