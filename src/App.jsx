@@ -235,7 +235,7 @@ export default function App() {
         dayMatches={dayMatchesForDate}
         dayPromos={promosForDate}
         standby={standbyForDate}
-        onAddDayPromo={data => addDayPromotion({ ...data, date, state: 'active' })}
+        onAddDayPromo={data => addDayPromotion({ date, type: data.type, title: data.title, description: data.description, state: 'active' })}
         onDeleteDayPromo={deleteDayPromotionLocal}
         onAddStandby={data => addDayPromotion({ date, type: data.type, title: data.title, description: data.description, state: data.status || 'standby' })}
         onDeleteStandby={deleteDayPromotionLocal}
