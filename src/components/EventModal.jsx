@@ -129,7 +129,7 @@ function EventRow({ event, onDelete, onEdit, onClick }) {
       <span style={{ fontSize: 18, lineHeight: 1, flexShrink: 0, marginTop: 1 }}>{type?.icon}</span>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap', marginBottom: 3 }}>
-          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: type?.color + '18', color: type?.color }}>
+          <span style={{ fontSize: 10, fontWeight: 700, padding: '2px 8px', borderRadius: 99, background: `${type?.color || '#888'}18`, color: type?.color || '#888' }}>
             {type?.label}
           </span>
           <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--t1)' }}>{event.title}</span>
