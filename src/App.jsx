@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, CalendarRange, BarChart3, Zap, Sun, Moon, Printer, Loader2, Megaphone } from 'lucide-react';
+import { CalendarDays, CalendarRange, BarChart3, Zap, Sun, Moon, Printer, Loader2, Megaphone, LayoutGrid } from 'lucide-react';
 import { format } from 'date-fns';
 import DateBar from './components/DateBar';
 import DayView from './components/DayView';
 import SummaryView from './components/SummaryView';
 import GeneralPromotionsView from './components/GeneralPromotionsView';
 import CalendarView from './components/CalendarView';
+import GroupsView from './components/GroupsView';
 import PromoDrawer from './components/PromoDrawer';
 import { useStore, useTheme } from './hooks/useStore';
 import { matches } from './data/matches';
@@ -20,6 +21,7 @@ function getDefault() {
 const TABS = [
   { id: 'day',      label: 'Dia',        icon: CalendarDays },
   { id: 'calendar', label: 'Calendário', icon: CalendarRange },
+  { id: 'groups',   label: 'Grupos',     icon: LayoutGrid },
   { id: 'summary',  label: 'Resumo',     icon: BarChart3 },
   { id: 'general',  label: 'Geral',      icon: Zap },
 ];
@@ -212,6 +214,16 @@ export default function App() {
                 dayPromoCounts={dayPromoCounts}
                 selectedDate={date}
                 today={today}
+                onPick={d => { setDate(d); setTab('day'); }}
+              />
+            </motion.div>
+          )}
+          {tab === 'groups' && (
+            <motion.div key="groups"
+              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }} transition={{ duration: .14 }}>
+              <GroupsView
+                dayPromoCounts={dayPromoCounts}
                 onPick={d => { setDate(d); setTab('day'); }}
               />
             </motion.div>
