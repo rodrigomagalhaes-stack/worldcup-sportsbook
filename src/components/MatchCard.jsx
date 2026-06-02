@@ -4,21 +4,6 @@ import { groups, promoTypes } from '../data/matches';
 import Flag from './Flag';
 import EventModal from './EventModal';
 
-function useFavorites() {
-  const [favs, setFavs] = useState(() => {
-    try { return new Set(JSON.parse(localStorage.getItem('sb_favs') || '[]')); } catch { return new Set(); }
-  });
-  const toggle = (id) => {
-    setFavs(prev => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      localStorage.setItem('sb_favs', JSON.stringify([...next]));
-      return next;
-    });
-  };
-  return { favs, toggle };
-}
-
 function PromoPill({ type }) {
   const t = promoTypes.find(p => p.id === type);
   if (!t) return null;
@@ -34,15 +19,13 @@ function PromoPill({ type }) {
   );
 }
 
-export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo }) {
+export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, isFav = false, onToggleFavorite }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [starAnim, setStarAnim] = useState(false);
-  const { favs, toggle: toggleFav } = useFavorites();
 
   const gc = groups[match.group]?.color || '#888';
   const hasEvents = events.length > 0;
-  const isFav = favs.has(match.id);
   const isMadrugada = parseInt(match.timeBRT) <= 4;
 
   // Tipos únicos de promoção presentes (para as pills)
@@ -50,7 +33,7 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
 
   const handleStarClick = (e) => {
     e.stopPropagation();
-    toggleFav(match.id);
+    onToggleFavorite?.(match.id);
     setStarAnim(true);
     setTimeout(() => setStarAnim(false), 300);
   };
@@ -62,12 +45,21 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
         onMouseLeave={() => setHovered(false)}
         onClick={() => setModalOpen(true)}
         style={{
-          background: 'var(--card)',
+          background: isFav ? 'var(--fav-bg)' : 'var(--card)',
           borderRadius: 'var(--radius)',
-          border: `1px solid ${hovered ? 'var(--green)' : 'var(--line)'}`,
-          boxShadow: hovered ? `var(--shadow), 0 0 0 1px var(--green-glow)` : 'var(--shadow-sm)',
+          border: hovered
+            ? `1px solid var(--green)`
+            : isFav
+              ? `1px solid var(--fav-line)`
+              : `1px solid var(--line)`,
+          borderTop: isFav ? `3px solid var(--fav-top)` : undefined,
+          boxShadow: hovered
+            ? `var(--shadow), 0 0 0 1px var(--green-glow)`
+            : isFav
+              ? 'var(--shadow)'
+              : 'var(--shadow-sm)',
           transform: hovered ? 'translateY(-3px)' : 'none',
-          transition: 'box-shadow .22s cubic-bezier(.4,0,.2,1), transform .22s, border-color .22s',
+          transition: 'background .2s, box-shadow .22s cubic-bezier(.4,0,.2,1), transform .22s, border-color .2s',
           position: 'relative',
           cursor: 'pointer',
           display: 'flex',
@@ -122,10 +114,10 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
                 style={{
                   width: 26, height: 26, borderRadius: 7, border: 'none', cursor: 'pointer',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: isFav ? 'rgba(244,197,66,0.14)' : 'transparent', transition: 'all .18s',
+                  background: isFav ? 'rgba(217,154,43,0.16)' : 'transparent', transition: 'all .18s',
                 }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(244,197,66,0.20)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = isFav ? 'rgba(244,197,66,0.14)' : 'transparent'; }}>
+                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(217,154,43,0.20)'; }}
+                onMouseLeave={e => { e.currentTarget.style.background = isFav ? 'rgba(217,154,43,0.16)' : 'transparent'; }}>
                 <Star size={13} fill={isFav ? '#F4C542' : 'none'} stroke={isFav ? '#F4C542' : 'var(--t3)'} style={{ transition: 'all .18s' }} />
               </button>
             </div>

@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchAllEvents, insertEvent, updateEvent as sbUpdate, deleteEvent as sbDelete, fetchGeneralPromotions, insertGeneralPromotion, updateGeneralPromotion as sbUpdateGP, deleteGeneralPromotion, fetchDayPromotions, insertDayPromotion, updateDayPromotion as sbUpdateDP, deleteDayPromotion } from '../lib/supabase';
+import { fetchAllEvents, insertEvent, updateEvent as sbUpdate, deleteEvent as sbDelete, fetchGeneralPromotions, insertGeneralPromotion, updateGeneralPromotion as sbUpdateGP, deleteGeneralPromotion, fetchDayPromotions, insertDayPromotion, updateDayPromotion as sbUpdateDP, deleteDayPromotion, fetchFavorites, insertFavorite, deleteFavorite } from '../lib/supabase';
 
 const DAY_PROMO_LIMIT_MSG = 'Limite de 2 promoções do dia ativas atingido para esta data.';
 
@@ -11,6 +11,10 @@ export function useStore() {
   const [events, setEvents] = useState({});
   const [generalPromotions, setGeneralPromotions] = useState([]);
   const [dayPromotions, setDayPromotions] = useState([]);
+  const [favorites, setFavorites] = useState(() => {
+    // Fallback: localStorage para visitantes antes do fetch terminar
+    try { return new Set(JSON.parse(localStorage.getItem('sb_favs') || '[]')); } catch { return new Set(); }
+  });
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -18,6 +22,11 @@ export function useStore() {
       fetchAllEvents().then(setEvents),
       fetchGeneralPromotions().then(setGeneralPromotions),
       fetchDayPromotions().then(setDayPromotions),
+      fetchFavorites().then(favSet => {
+        setFavorites(favSet);
+        // Sincroniza localStorage com o banco
+        localStorage.setItem('sb_favs', JSON.stringify([...favSet]));
+      }),
     ])
       .catch(err => console.error('Supabase fetch error:', err))
       .finally(() => setLoading(false));
@@ -127,10 +136,36 @@ export function useStore() {
     return updateDayPromotionLocal(id, { state: 'active' });
   }, [updateDayPromotionLocal]);
 
+  // ── Favorites (optimistic) ───────────────────────────────
+  const toggleFavorite = useCallback(async (matchId) => {
+    const isFav = favorites.has(matchId);
+    // Optimistic update
+    setFavorites(prev => {
+      const next = new Set(prev);
+      isFav ? next.delete(matchId) : next.add(matchId);
+      localStorage.setItem('sb_favs', JSON.stringify([...next]));
+      return next;
+    });
+    try {
+      if (isFav) await deleteFavorite(matchId);
+      else await insertFavorite(matchId);
+    } catch (err) {
+      // Reverter em caso de erro
+      setFavorites(prev => {
+        const next = new Set(prev);
+        isFav ? next.add(matchId) : next.delete(matchId);
+        localStorage.setItem('sb_favs', JSON.stringify([...next]));
+        return next;
+      });
+      console.error('toggleFavorite error:', err);
+    }
+  }, [favorites]);
+
   return {
     events, loading, addEvent, updateEvent, deleteEvent,
     generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal,
     dayPromotions, addDayPromotion, updateDayPromotionLocal, deleteDayPromotionLocal, activateStandbyPromotion,
+    favorites, toggleFavorite,
   };
 }
 

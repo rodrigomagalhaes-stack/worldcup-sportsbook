@@ -140,3 +140,28 @@ export async function deleteDayPromotion(promoId) {
     .eq('id', promoId);
   if (error) throw error;
 }
+
+// ── Favorites ────────────────────────────────────────────────
+
+export async function fetchFavorites() {
+  const { data, error } = await supabase
+    .from('favorites')
+    .select('match_id');
+  if (error) throw error;
+  return new Set(data.map(r => r.match_id));
+}
+
+export async function insertFavorite(matchId) {
+  const { error } = await supabase
+    .from('favorites')
+    .insert({ match_id: matchId });
+  if (error) throw error;
+}
+
+export async function deleteFavorite(matchId) {
+  const { error } = await supabase
+    .from('favorites')
+    .delete()
+    .eq('match_id', matchId);
+  if (error) throw error;
+}

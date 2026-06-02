@@ -28,6 +28,10 @@
   --gold-bg:   rgba(244,197,66,0.10);
   --gold-line: rgba(244,197,66,0.30);
 
+  --fav-bg:    rgba(217,154,43,0.08);
+  --fav-line:  rgba(217,154,43,0.45);
+  --fav-top:   #D99A2B;
+
   --blue:      #3BA7FF;
   --blue-bg:   rgba(59,167,255,0.08);
   --purple:    #A855F7;
@@ -61,6 +65,10 @@
   --gold:      #F4C542;
   --gold-bg:   rgba(244,197,66,0.10);
   --gold-line: rgba(244,197,66,0.25);
+
+  --fav-bg:    rgba(217,154,43,0.12);
+  --fav-line:  rgba(217,154,43,0.45);
+  --fav-top:   #D99A2B;
   --shadow-sm: 0 1px 6px rgba(0,0,0,0.30);
   --shadow:    0 4px 24px rgba(0,0,0,0.40);
   --shadow-lg: 0 12px 48px rgba(0,0,0,0.55);

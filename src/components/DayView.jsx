@@ -7,7 +7,7 @@ import { matches } from '../data/matches';
 import MatchCard from './MatchCard';
 import DayPromoBanner from './DayPromoBanner';
 
-export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, promos = [], onDeleteDayPromo, onUpdateDayPromo }) {
+export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, promos = [], onDeleteDayPromo, onUpdateDayPromo, favorites, onToggleFavorite }) {
   // Ordenação: madrugada (01/02h) vem ANTES dos demais
   const dayMatches = useMemo(() =>
     matches
@@ -108,6 +108,8 @@ export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdat
                 onAdd={onAdd} onDelete={onDelete} onUpdate={onUpdate}
                 dayPromoActive={dayPromoActive}
                 onOpenDayPromo={onOpenDayPromo}
+                isFav={favorites ? favorites.has(m.id) : false}
+                onToggleFavorite={onToggleFavorite}
               />
             </motion.div>
           ))}

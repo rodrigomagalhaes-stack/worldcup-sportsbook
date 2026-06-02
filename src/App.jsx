@@ -34,6 +34,7 @@ export default function App() {
     events, loading, addEvent, updateEvent, deleteEvent,
     generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal,
     dayPromotions, addDayPromotion, updateDayPromotionLocal, deleteDayPromotionLocal, activateStandbyPromotion,
+    favorites, toggleFavorite,
   } = useStore();
   const { theme, toggle } = useTheme();
 
@@ -203,7 +204,9 @@ export default function App() {
                 onOpenDayPromo={() => setDrawerOpen(true)}
                 promos={promosForDate}
                 onDeleteDayPromo={deleteDayPromotionLocal}
-                onUpdateDayPromo={updateDayPromotionLocal} />
+                onUpdateDayPromo={updateDayPromotionLocal}
+                favorites={favorites}
+                onToggleFavorite={toggleFavorite} />
             </motion.div>
           )}
           {tab === 'calendar' && (
