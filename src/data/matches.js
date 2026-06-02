@@ -22,7 +22,7 @@ export const groups = {
 
 export const promoTypes = [
   { id:'boost',   label:'Boost de Odds',    short:'Boost',   color:'#D99A2B', tint:'#FBF1DA', icon:'🚀' },
-  { id:'mercado', label:'Mercado Especial', short:'Mercado', color:'#3D7DC4', tint:'#E4EDF8', icon:'⚡' },
+  { id:'mercado', label:'CRM',              short:'CRM',     color:'#3D7DC4', tint:'#E4EDF8', icon:'⚡' },
   { id:'promo',   label:'Promoção do Dia',  short:'Promo',   color:'#13A06C', tint:'#DCF1E8', icon:'🎯' },
 ];
 
