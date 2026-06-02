@@ -29,7 +29,7 @@ export default function App() {
   const {
     events, loading, addEvent, updateEvent, deleteEvent,
     generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal,
-    dayPromotions, addDayPromotion, deleteDayPromotionLocal, activateStandbyPromotion,
+    dayPromotions, addDayPromotion, updateDayPromotionLocal, deleteDayPromotionLocal, activateStandbyPromotion,
   } = useStore();
   const { theme, toggle } = useTheme();
 
@@ -195,7 +195,8 @@ export default function App() {
                 dayPromoActive={promosForDate.length > 0}
                 onOpenDayPromo={() => setDrawerOpen(true)}
                 promos={promosForDate}
-                onDeleteDayPromo={deleteDayPromotionLocal} />
+                onDeleteDayPromo={deleteDayPromotionLocal}
+                onUpdateDayPromo={updateDayPromotionLocal} />
             </motion.div>
           )}
           {tab === 'summary' && (
@@ -239,6 +240,7 @@ export default function App() {
         standby={standbyForDate}
         onAddDayPromo={data => addDayPromotion({ date, type: data.type, title: data.title, description: data.description, state: 'active' })}
         onDeleteDayPromo={deleteDayPromotionLocal}
+        onUpdateDayPromo={updateDayPromotionLocal}
         onAddStandby={data => addDayPromotion({ date, type: data.type, title: data.title, description: data.description, state: data.status || 'standby' })}
         onDeleteStandby={deleteDayPromotionLocal}
         onActivate={activateStandbyPromotion}

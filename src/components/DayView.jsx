@@ -7,7 +7,7 @@ import { matches } from '../data/matches';
 import MatchCard from './MatchCard';
 import DayPromoBanner from './DayPromoBanner';
 
-export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, promos = [], onDeleteDayPromo }) {
+export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, promos = [], onDeleteDayPromo, onUpdateDayPromo }) {
   // Ordenação: madrugada (01/02h) vem ANTES dos demais
   const dayMatches = useMemo(() =>
     matches
@@ -83,6 +83,7 @@ export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdat
         promos={promos}
         dayMatches={dayMatches}
         onDeletePromo={onDeleteDayPromo}
+        onUpdatePromo={onUpdateDayPromo}
       />
 
       {/* Cards — grid direto, sem agrupamento por período */}

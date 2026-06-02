@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
-import { X, Plus, Trash2, Megaphone, PauseCircle, ArrowUp, Check } from 'lucide-react';
+import { X, Plus, Trash2, Megaphone, PauseCircle, ArrowUp, Check, Edit3 } from 'lucide-react';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { promoTypes, promoStatuses } from '../data/matches';
@@ -24,8 +24,13 @@ function TypeChip({ type }) {
 }
 
 /* ── Mini-formulário inline ───────────────────────────────── */
-function PromoMiniForm({ withStatus, onSave, onCancel }) {
-  const [f, setF] = useState({ type: 'boost', title: '', description: '', status: 'standby' });
+function PromoMiniForm({ initial, withStatus, onSave, onCancel }) {
+  const [f, setF] = useState({
+    type: initial?.type || 'boost',
+    title: initial?.title || '',
+    description: initial?.description || '',
+    status: initial?.state || 'standby',
+  });
 
   return (
     <form
@@ -116,7 +121,7 @@ function PromoMiniForm({ withStatus, onSave, onCancel }) {
 }
 
 /* ── Card de promoção do dia (ativa) ──────────────────────── */
-function DayPromoCard({ promo, dayMatches, onDelete }) {
+function DayPromoCard({ promo, dayMatches, onDelete, onEdit }) {
   const t = typeOf(promo.type);
   return (
     <div style={{
@@ -127,12 +132,20 @@ function DayPromoCard({ promo, dayMatches, onDelete }) {
       <div style={{ padding: '12px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
           <TypeChip type={promo.type} />
-          <button onClick={onDelete} aria-label={`Excluir ${promo.title}`}
-            style={{ marginLeft: 'auto', padding: 4, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, display: 'flex', transition: 'color .12s' }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--red)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
-            <Trash2 size={14} />
-          </button>
+          <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+            <button onClick={onEdit} aria-label={`Editar ${promo.title}`}
+              style={{ padding: 4, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, display: 'flex', transition: 'color .12s' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+              <Edit3 size={14} />
+            </button>
+            <button onClick={onDelete} aria-label={`Excluir ${promo.title}`}
+              style={{ padding: 4, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, display: 'flex', transition: 'color .12s' }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--red)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+              <Trash2 size={14} />
+            </button>
+          </div>
         </div>
         <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--t1)', lineHeight: 1.3 }}>{promo.title}</div>
         {promo.description && <p style={{ fontSize: 12.5, color: 'var(--t2)', lineHeight: 1.5, marginTop: 4 }}>{promo.description}</p>}
@@ -242,10 +255,11 @@ function DashedButton({ onClick, children }) {
 
 export default function PromoDrawer({
   open, onClose, date, dayMatches = [], dayPromos = [], standby = [],
-  onAddDayPromo, onDeleteDayPromo, onAddStandby, onDeleteStandby, onActivate,
+  onAddDayPromo, onDeleteDayPromo, onUpdateDayPromo, onAddStandby, onDeleteStandby, onActivate,
 }) {
   const [showDayForm, setShowDayForm] = useState(false);
   const [showStandbyForm, setShowStandbyForm] = useState(false);
+  const [editingPromo, setEditingPromo] = useState(null); // promo sendo editada
 
   useEffect(() => {
     const handleEscape = (e) => { if (e.key === 'Escape') onClose(); };
@@ -334,8 +348,21 @@ export default function PromoDrawer({
 
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                   {dayPromos.map(p => (
-                    <DayPromoCard key={p.id} promo={p} dayMatches={dayMatches}
-                      onDelete={() => onDeleteDayPromo(p.id)} />
+                    editingPromo?.id === p.id ? (
+                      <div key={p.id} style={{ borderRadius: 14, border: '1px solid var(--line)', background: 'var(--card)', padding: '12px 14px' }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 14 }}>
+                          Editar promoção
+                        </p>
+                        <PromoMiniForm
+                          initial={editingPromo}
+                          onSave={data => { onUpdateDayPromo(p.id, data); setEditingPromo(null); }}
+                          onCancel={() => setEditingPromo(null)} />
+                      </div>
+                    ) : (
+                      <DayPromoCard key={p.id} promo={p} dayMatches={dayMatches}
+                        onDelete={() => onDeleteDayPromo(p.id)}
+                        onEdit={() => { setEditingPromo(p); setShowDayForm(false); }} />
+                    )
                   ))}
 
                   {showDayForm ? (
