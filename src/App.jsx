@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, BarChart3, Zap, Sun, Moon, Printer, Loader2, Megaphone } from 'lucide-react';
+import { CalendarDays, CalendarRange, BarChart3, Zap, Sun, Moon, Printer, Loader2, Megaphone } from 'lucide-react';
 import { format } from 'date-fns';
 import DateBar from './components/DateBar';
 import DayView from './components/DayView';
 import SummaryView from './components/SummaryView';
 import GeneralPromotionsView from './components/GeneralPromotionsView';
+import CalendarView from './components/CalendarView';
 import PromoDrawer from './components/PromoDrawer';
 import { useStore, useTheme } from './hooks/useStore';
 import { matches } from './data/matches';
@@ -17,7 +18,8 @@ function getDefault() {
 }
 
 const TABS = [
-  { id: 'day',      label: 'Calendário', icon: CalendarDays },
+  { id: 'day',      label: 'Dia',        icon: CalendarDays },
+  { id: 'calendar', label: 'Calendário', icon: CalendarRange },
   { id: 'summary',  label: 'Resumo',     icon: BarChart3 },
   { id: 'general',  label: 'Geral',      icon: Zap },
 ];
@@ -32,6 +34,9 @@ export default function App() {
     dayPromotions, addDayPromotion, updateDayPromotionLocal, deleteDayPromotionLocal, activateStandbyPromotion,
   } = useStore();
   const { theme, toggle } = useTheme();
+
+  // ── Today ──
+  const today = format(new Date(), 'yyyy-MM-dd');
 
   // ── Derivados das promoções do dia ──
   const dayMatchesForDate = matches.filter(m => m.date === date);
@@ -197,6 +202,18 @@ export default function App() {
                 promos={promosForDate}
                 onDeleteDayPromo={deleteDayPromotionLocal}
                 onUpdateDayPromo={updateDayPromotionLocal} />
+            </motion.div>
+          )}
+          {tab === 'calendar' && (
+            <motion.div key="calendar"
+              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }} transition={{ duration: .14 }}>
+              <CalendarView
+                dayPromoCounts={dayPromoCounts}
+                selectedDate={date}
+                today={today}
+                onPick={d => { setDate(d); setTab('day'); }}
+              />
             </motion.div>
           )}
           {tab === 'summary' && (
