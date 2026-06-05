@@ -113,7 +113,7 @@ function EventForm({ initial, onSave, onCancel }) {
   );
 }
 
-function EventRow({ event, onDelete, onEdit, onClick }) {
+function EventRow({ event, onDelete, onEdit, onClick, isAdmin }) {
   const type = promoTypes.find(t => t.id === event.type);
   return (
     <div
@@ -141,25 +141,27 @@ function EventRow({ event, onDelete, onEdit, onClick }) {
           </div>
         )}
       </div>
-      <div style={{ display: 'flex', gap: 2, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-        <button onClick={onEdit}
-          style={{ padding: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, transition: 'color .12s', display: 'flex' }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
-          <Edit3 size={14} />
-        </button>
-        <button onClick={onDelete}
-          style={{ padding: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, transition: 'color .12s', display: 'flex' }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--red)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
-          <Trash2 size={14} />
-        </button>
-      </div>
+      {isAdmin && (
+        <div style={{ display: 'flex', gap: 2, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+          <button onClick={onEdit}
+            style={{ padding: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, transition: 'color .12s', display: 'flex' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+            <Edit3 size={14} />
+          </button>
+          <button onClick={onDelete}
+            style={{ padding: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, transition: 'color .12s', display: 'flex' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--red)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+            <Trash2 size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-export default function EventModal({ match, events, onAdd, onDelete, onUpdate, onClose, groupColor }) {
+export default function EventModal({ match, events, onAdd, onDelete, onUpdate, onClose, groupColor, isAdmin }) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [selectedEventDetail, setSelectedEventDetail] = useState(null);
@@ -271,14 +273,15 @@ export default function EventModal({ match, events, onAdd, onDelete, onUpdate, o
                     <EventRow key={ev.id} event={ev}
                       onClick={() => setSelectedEventDetail(ev)}
                       onDelete={() => onDelete(match.id, ev.id)}
-                      onEdit={() => { setEditing(ev); setShowForm(true); }} />
+                      onEdit={() => { setEditing(ev); setShowForm(true); }}
+                      isAdmin={isAdmin} />
                   ))}
                 </div>
               </div>
             )}
 
             {/* Botão adicionar */}
-            {!showForm && (
+            {!showForm && isAdmin && (
               <button onClick={() => { setEditing(null); setShowForm(true); }}
                 style={{
                   width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -320,15 +323,9 @@ export default function EventModal({ match, events, onAdd, onDelete, onUpdate, o
         <EventDetailModal
           event={selectedEventDetail}
           onClose={() => setSelectedEventDetail(null)}
-          onDelete={() => {
-            onDelete(match.id, selectedEventDetail.id);
-            setSelectedEventDetail(null);
-          }}
-          onEdit={() => {
-            setEditing(selectedEventDetail);
-            setShowForm(true);
-            setSelectedEventDetail(null);
-          }}
+          onDelete={() => { onDelete(match.id, selectedEventDetail.id); setSelectedEventDetail(null); }}
+          onEdit={() => { setEditing(selectedEventDetail); setShowForm(true); setSelectedEventDetail(null); }}
+          isAdmin={isAdmin}
         />
       )}
     </AnimatePresence>

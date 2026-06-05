@@ -6,7 +6,7 @@ import { matches, promoTypes } from '../data/matches';
 import Flag from './Flag';
 import EventDetailModal from './EventDetailModal';
 
-export default function SummaryView({ events, onDelete, generalPromotions }) {
+export default function SummaryView({ events, onDelete, generalPromotions, isAdmin }) {
   const [selectedEventDetail, setSelectedEventDetail] = useState(null); // { event, match }
 
   const summary = useMemo(() => {
@@ -155,17 +155,9 @@ export default function SummaryView({ events, onDelete, generalPromotions }) {
         <EventDetailModal
           event={selectedEventDetail.event}
           onClose={() => setSelectedEventDetail(null)}
-          onDelete={() => {
-            if (onDelete) {
-              onDelete(selectedEventDetail.match.id, selectedEventDetail.event.id);
-              setSelectedEventDetail(null);
-            }
-          }}
-          onEdit={() => {
-            // In summary view, editing would require opening the event modal for that match
-            // For now, we'll just close the detail modal
-            setSelectedEventDetail(null);
-          }}
+          onDelete={() => { onDelete?.(selectedEventDetail.match.id, selectedEventDetail.event.id); setSelectedEventDetail(null); }}
+          onEdit={() => setSelectedEventDetail(null)}
+          isAdmin={isAdmin}
         />
       )}
     </div>

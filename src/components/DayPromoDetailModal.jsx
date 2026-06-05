@@ -111,7 +111,7 @@ function EditForm({ promo, onSave, onCancel }) {
 }
 
 /* ── Modal principal ─────────────────────────────────────── */
-export default function DayPromoDetailModal({ promo, dayMatches = [], onClose, onDelete, onUpdate }) {
+export default function DayPromoDetailModal({ promo, dayMatches = [], onClose, onDelete, onUpdate, isAdmin }) {
   const [editing, setEditing] = useState(false);
   const type = promoTypes.find(t => t.id === promo.type);
 
@@ -284,8 +284,8 @@ export default function DayPromoDetailModal({ promo, dayMatches = [], onClose, o
             )}
           </div>
 
-          {/* Footer — só aparece no modo visualização */}
-          {!editing && (
+          {/* Footer — só aparece no modo visualização e para admin */}
+          {!editing && isAdmin && (
             <div style={{
               padding: '16px 24px', borderTop: '1px solid var(--line)',
               background: 'var(--card)',

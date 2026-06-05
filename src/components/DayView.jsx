@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useAltenarBoosts } from '../hooks/useAltenarBoosts';
 import { motion } from 'framer-motion';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -7,7 +8,134 @@ import { matches } from '../data/matches';
 import MatchCard from './MatchCard';
 import DayPromoBanner from './DayPromoBanner';
 
-export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, promos = [], onDeleteDayPromo, onUpdateDayPromo, favorites, onToggleFavorite }) {
+function BoostSummaryCard({ detailsByTimeBRT, dayMatches, loading }) {
+  const allBoosts = useMemo(() => {
+    const result = [];
+    for (const m of dayMatches) {
+      const entry = detailsByTimeBRT.get(m.timeBRT);
+      if (!entry) continue;
+      const { boosts, markets, oddsMap } = entry;
+      for (const boost of boosts) {
+        // Para cada seleção do boost, resolver nome do mercado e da seleção
+        const labels = (boost.odds ?? []).map(o => ({
+          market: markets?.get(o.marketId) ?? '',
+          selection: oddsMap?.get(o.selectionId) ?? '',
+        }));
+        result.push({ boost, match: m, labels });
+      }
+    }
+    return result;
+  }, [detailsByTimeBRT, dayMatches]);
+
+  if (loading) return (
+    <div style={{
+      marginTop: 12, maxWidth: 480,
+      borderRadius: 'var(--radius)',
+      border: '1px solid rgba(249,115,22,0.20)',
+      background: 'rgba(249,115,22,0.04)',
+      padding: '14px 18px',
+      display: 'flex', alignItems: 'center', gap: 10,
+    }}>
+      <span style={{ fontSize: 18 }}>⚡</span>
+      <span style={{ fontSize: 13, color: 'var(--t2)', fontWeight: 500 }}>Buscando boosted odds na Altenar…</span>
+    </div>
+  );
+
+  if (allBoosts.length === 0) return null;
+
+  return (
+    <div style={{
+      marginTop: 12, maxWidth: 480,
+      borderRadius: 'var(--radius)',
+      border: '1px solid rgba(249,115,22,0.25)',
+      background: 'var(--card)',
+      overflow: 'hidden',
+    }}>
+      {/* Header */}
+      <div style={{
+        padding: '12px 18px',
+        background: 'linear-gradient(90deg, rgba(249,115,22,0.10) 0%, rgba(251,191,36,0.07) 100%)',
+        borderBottom: '1px solid rgba(249,115,22,0.15)',
+        display: 'flex', alignItems: 'center', gap: 8,
+      }}>
+        <span style={{ fontSize: 16 }}>🔥</span>
+        <div>
+          <p style={{ fontSize: 12, fontWeight: 800, color: '#f97316' }}>Boosted Odds do Dia</p>
+          <p style={{ fontSize: 10, color: 'var(--t3)', marginTop: 1 }}>
+            {allBoosts.length} boost{allBoosts.length > 1 ? 's' : ''} disponíve{allBoosts.length > 1 ? 'is' : 'l'} via Altenar
+          </p>
+        </div>
+      </div>
+
+      {/* Lista */}
+      {allBoosts.map(({ boost, match, labels }, i) => {
+        const isLast = i === allBoosts.length - 1;
+        const pct = boost.boostInfo?.price && boost.price
+          ? (((boost.boostInfo.price - boost.price) / boost.price) * 100).toFixed(0)
+          : null;
+
+        return (
+          <div key={boost.id} style={{
+            display: 'flex', alignItems: 'center', gap: 12,
+            padding: '10px 18px',
+            borderBottom: isLast ? 'none' : '1px solid var(--line)',
+          }}>
+            {/* Info */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 3 }}>
+                <span style={{
+                  fontSize: 9, fontWeight: 800, padding: '1px 6px', borderRadius: 4,
+                  background: boost.isBB ? 'rgba(99,102,241,0.10)' : 'rgba(249,115,22,0.10)',
+                  color: boost.isBB ? '#6366f1' : '#f97316',
+                  border: `1px solid ${boost.isBB ? 'rgba(99,102,241,0.20)' : 'rgba(249,115,22,0.20)'}`,
+                  letterSpacing: '0.05em', textTransform: 'uppercase',
+                }}>
+                  {boost.isBB ? 'Bet Builder' : 'Odd Boost'}
+                </span>
+                <span style={{ fontSize: 10, color: 'var(--t3)' }}>{match.timeBRT} BRT</span>
+              </div>
+              <p style={{ fontSize: 12, fontWeight: 700, color: 'var(--t1)', marginBottom: 3 }}>
+                {match.home} vs. {match.away}
+              </p>
+              {labels.map((l, li) => l.market && (
+                <p key={li} style={{ fontSize: 10, color: 'var(--t3)', lineHeight: 1.4 }}>
+                  {l.market}{l.selection ? ` · ${l.selection}` : ''}
+                </p>
+              ))}
+              {boost.boostInfo?.betsLimit && (
+                <p style={{ fontSize: 10, color: 'var(--t3)', marginTop: 2 }}>
+                  Limite: {boost.boostInfo.betsLimit} aposta{boost.boostInfo.betsLimit > 1 ? 's' : ''}
+                </p>
+              )}
+            </div>
+
+            {/* Odds */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
+              <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--t3)', textDecoration: 'line-through' }}>
+                {boost.price?.toFixed(2)}
+              </span>
+              <span style={{ fontSize: 10, color: 'var(--t3)' }}>→</span>
+              <span style={{ fontSize: 18, fontWeight: 900, color: '#f97316', fontFamily: 'var(--font-d)' }}>
+                {boost.boostInfo?.price?.toFixed(2)}
+              </span>
+              {pct && (
+                <span style={{
+                  fontSize: 10, fontWeight: 800, padding: '2px 6px', borderRadius: 5,
+                  background: 'rgba(22,196,127,0.12)', color: '#16C47F',
+                  border: '1px solid rgba(22,196,127,0.25)',
+                }}>+{pct}%</span>
+              )}
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, promos = [], onDeleteDayPromo, onUpdateDayPromo, favorites, onToggleFavorite, isAdmin }) {
+  const { detailsByTimeBRT, boostsByTimeBRT, loading: boostsLoading } = useAltenarBoosts(selectedDate);
+
   // Ordenação: madrugada (01/02h) vem ANTES dos demais
   const dayMatches = useMemo(() =>
     matches
@@ -84,6 +212,7 @@ export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdat
         dayMatches={dayMatches}
         onDeletePromo={onDeleteDayPromo}
         onUpdatePromo={onUpdateDayPromo}
+        isAdmin={isAdmin}
       />
 
       {/* Cards — grid direto, sem agrupamento por período */}
@@ -95,13 +224,15 @@ export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdat
         <div style={{
           display: 'grid',
           gap: 'clamp(10px,1.5vw,18px)',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(170px,20vw,215px), 1fr))',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(260px,28vw,340px), 1fr))',
+          alignItems: 'start',
         }}>
           {dayMatches.map((m, i) => (
             <motion.div key={m.id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * .04, duration: .2 }}>
+              transition={{ delay: i * .04, duration: .2 }}
+              style={{ display: 'flex', flexDirection: 'column' }}>
               <MatchCard
                 match={m}
                 events={events[m.id] || []}
@@ -110,6 +241,7 @@ export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdat
                 onOpenDayPromo={onOpenDayPromo}
                 isFav={favorites ? favorites.has(m.id) : false}
                 onToggleFavorite={onToggleFavorite}
+                isAdmin={isAdmin}
               />
             </motion.div>
           ))}
@@ -135,6 +267,13 @@ export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdat
           </p>
         </div>
       </div>
+
+      {/* Card de boosted odds do dia */}
+      <BoostSummaryCard
+        detailsByTimeBRT={detailsByTimeBRT}
+        dayMatches={dayMatches}
+        loading={boostsLoading}
+      />
     </div>
   );
 }

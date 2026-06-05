@@ -121,7 +121,7 @@ function PromoMiniForm({ initial, withStatus, onSave, onCancel }) {
 }
 
 /* ── Card de promoção do dia (ativa) ──────────────────────── */
-function DayPromoCard({ promo, dayMatches, onDelete, onEdit }) {
+function DayPromoCard({ promo, dayMatches, onDelete, onEdit, isAdmin }) {
   const t = typeOf(promo.type);
   return (
     <div style={{
@@ -132,20 +132,22 @@ function DayPromoCard({ promo, dayMatches, onDelete, onEdit }) {
       <div style={{ padding: '12px 14px' }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: 8 }}>
           <TypeChip type={promo.type} />
-          <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
-            <button onClick={onEdit} aria-label={`Editar ${promo.title}`}
-              style={{ padding: 4, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, display: 'flex', transition: 'color .12s' }}
-              onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'}
-              onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
-              <Edit3 size={14} />
-            </button>
-            <button onClick={onDelete} aria-label={`Excluir ${promo.title}`}
-              style={{ padding: 4, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, display: 'flex', transition: 'color .12s' }}
-              onMouseEnter={e => e.currentTarget.style.color = 'var(--red)'}
-              onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
-              <Trash2 size={14} />
-            </button>
-          </div>
+          {isAdmin && (
+            <div style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+              <button onClick={onEdit} aria-label={`Editar ${promo.title}`}
+                style={{ padding: 4, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, display: 'flex', transition: 'color .12s' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+                <Edit3 size={14} />
+              </button>
+              <button onClick={onDelete} aria-label={`Excluir ${promo.title}`}
+                style={{ padding: 4, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, display: 'flex', transition: 'color .12s' }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--red)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+                <Trash2 size={14} />
+              </button>
+            </div>
+          )}
         </div>
         <div style={{ fontSize: 14, fontWeight: 800, color: 'var(--t1)', lineHeight: 1.3 }}>{promo.title}</div>
         {promo.description && <p style={{ fontSize: 12.5, color: 'var(--t2)', lineHeight: 1.5, marginTop: 4 }}>{promo.description}</p>}
@@ -178,7 +180,7 @@ function DayPromoCard({ promo, dayMatches, onDelete, onEdit }) {
 }
 
 /* ── Card de stand by / sugestão ──────────────────────────── */
-function StandbyCard({ promo, canActivate, onActivate, onDelete }) {
+function StandbyCard({ promo, canActivate, onActivate, onDelete, isAdmin }) {
   const st = promoStatuses[promo.state] || promoStatuses.standby;
   return (
     <div style={{
@@ -199,7 +201,7 @@ function StandbyCard({ promo, canActivate, onActivate, onDelete }) {
       {promo.description && <p style={{ fontSize: 12.5, color: 'var(--t2)', lineHeight: 1.5, marginTop: 4 }}>{promo.description}</p>}
       {promo.note && <p style={{ fontSize: 11, color: 'var(--t3)', fontStyle: 'italic', marginTop: 6 }}>· {promo.note}</p>}
 
-      <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+      {isAdmin && <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
         <button onClick={onActivate} disabled={!canActivate}
           title={canActivate ? 'Ativar no dia' : 'Limite de 2 promoções ativas atingido'}
           style={{
@@ -223,7 +225,7 @@ function StandbyCard({ promo, canActivate, onActivate, onDelete }) {
           onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
           <Trash2 size={14} />
         </button>
-      </div>
+      </div>}
     </div>
   );
 }
@@ -255,7 +257,7 @@ function DashedButton({ onClick, children }) {
 
 export default function PromoDrawer({
   open, onClose, date, dayMatches = [], dayPromos = [], standby = [],
-  onAddDayPromo, onDeleteDayPromo, onUpdateDayPromo, onAddStandby, onDeleteStandby, onActivate,
+  onAddDayPromo, onDeleteDayPromo, onUpdateDayPromo, onAddStandby, onDeleteStandby, onActivate, isAdmin,
 }) {
   const [showDayForm, setShowDayForm] = useState(false);
   const [showStandbyForm, setShowStandbyForm] = useState(false);
@@ -361,11 +363,12 @@ export default function PromoDrawer({
                     ) : (
                       <DayPromoCard key={p.id} promo={p} dayMatches={dayMatches}
                         onDelete={() => onDeleteDayPromo(p.id)}
-                        onEdit={() => { setEditingPromo(p); setShowDayForm(false); }} />
+                        onEdit={() => { setEditingPromo(p); setShowDayForm(false); }}
+                        isAdmin={isAdmin} />
                     )
                   ))}
 
-                  {showDayForm ? (
+                  {isAdmin && (showDayForm ? (
                     <PromoMiniForm
                       onSave={data => { onAddDayPromo(data); setShowDayForm(false); }}
                       onCancel={() => setShowDayForm(false)} />
@@ -378,7 +381,7 @@ export default function PromoDrawer({
                     </div>
                   ) : (
                     <DashedButton onClick={() => setShowDayForm(true)}>Nova promoção do dia</DashedButton>
-                  )}
+                  ))}
                 </div>
               </section>
 
@@ -400,16 +403,17 @@ export default function PromoDrawer({
                   {standby.map(p => (
                     <StandbyCard key={p.id} promo={p} canActivate={!atLimit}
                       onActivate={() => onActivate(p.id)}
-                      onDelete={() => onDeleteStandby(p.id)} />
+                      onDelete={() => onDeleteStandby(p.id)}
+                      isAdmin={isAdmin} />
                   ))}
 
-                  {showStandbyForm ? (
+                  {isAdmin && (showStandbyForm ? (
                     <PromoMiniForm withStatus
                       onSave={data => { onAddStandby(data); setShowStandbyForm(false); }}
                       onCancel={() => setShowStandbyForm(false)} />
                   ) : (
                     <DashedButton onClick={() => setShowStandbyForm(true)}>Adicionar à espera</DashedButton>
-                  )}
+                  ))}
                 </div>
               </section>
             </div>

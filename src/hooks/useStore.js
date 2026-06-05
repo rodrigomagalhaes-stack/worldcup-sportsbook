@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchAllEvents, insertEvent, updateEvent as sbUpdate, deleteEvent as sbDelete, fetchGeneralPromotions, insertGeneralPromotion, updateGeneralPromotion as sbUpdateGP, deleteGeneralPromotion, fetchDayPromotions, insertDayPromotion, updateDayPromotion as sbUpdateDP, deleteDayPromotion, fetchFavorites, insertFavorite, deleteFavorite } from '../lib/supabase';
+import { fetchAllEvents, insertEvent, updateEvent as sbUpdate, deleteEvent as sbDelete, fetchGeneralPromotions, insertGeneralPromotion, updateGeneralPromotion as sbUpdateGP, deleteGeneralPromotion, fetchDayPromotions, insertDayPromotion, updateDayPromotion as sbUpdateDP, deleteDayPromotion, fetchFavorites, insertFavorite, deleteFavorite, supabase } from '../lib/supabase';
 
 const DAY_PROMO_LIMIT_MSG = 'Limite de 2 promoções do dia ativas atingido para esta data.';
 
@@ -167,6 +167,33 @@ export function useStore() {
     dayPromotions, addDayPromotion, updateDayPromotionLocal, deleteDayPromotionLocal, activateStandbyPromotion,
     favorites, toggleFavorite,
   };
+}
+
+export function useAuth() {
+  const [session, setSession] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data }) => {
+      setSession(data.session);
+      setAuthLoading(false);
+    });
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setSession(s);
+    });
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const signIn = useCallback(async (email, password) => {
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) throw error;
+  }, []);
+
+  const signOut = useCallback(async () => {
+    await supabase.auth.signOut();
+  }, []);
+
+  return { isAdmin: !!session, authLoading, signIn, signOut };
 }
 
 export function useTheme() {

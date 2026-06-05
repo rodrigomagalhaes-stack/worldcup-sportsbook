@@ -3,7 +3,7 @@ import { X, Trash2, Edit3 } from 'lucide-react';
 import { useEffect } from 'react';
 import { promoTypes } from '../data/matches';
 
-export default function GeneralPromotionDetailModal({ promotion, onClose, onEdit, onDelete }) {
+export default function GeneralPromotionDetailModal({ promotion, onClose, onEdit, onDelete, isAdmin }) {
   const type = promoTypes.find(t => t.id === promotion.type);
 
   useEffect(() => {
@@ -153,7 +153,7 @@ export default function GeneralPromotionDetailModal({ promotion, onClose, onEdit
           </div>
 
           {/* Footer with actions */}
-          <div style={{
+          {isAdmin && <div style={{
             padding: '16px 24px',
             borderTop: '1px solid var(--line)',
             background: 'var(--card)',
@@ -189,7 +189,7 @@ export default function GeneralPromotionDetailModal({ promotion, onClose, onEdit
               <Trash2 size={13} />
               Deletar
             </button>
-          </div>
+          </div>}
         </motion.div>
       </motion.div>
     </AnimatePresence>

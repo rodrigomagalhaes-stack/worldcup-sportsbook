@@ -125,7 +125,7 @@ function FeaturedPromo({ promo, dayMatches, onOpenModal }) {
 /* ─────────────────────────────────────────────────────────────
    DayPromoBanner — faixa completa que agrupa os cards
 ───────────────────────────────────────────────────────────── */
-export default function DayPromoBanner({ promos, dayMatches, onDeletePromo, onUpdatePromo }) {
+export default function DayPromoBanner({ promos, dayMatches, onDeletePromo, onUpdatePromo, isAdmin }) {
   const [selectedPromo, setSelectedPromo] = useState(null);
 
   /* Sem promoções — não renderiza nada */
@@ -168,14 +168,9 @@ export default function DayPromoBanner({ promos, dayMatches, onDeletePromo, onUp
           promo={selectedPromo}
           dayMatches={dayMatches}
           onClose={() => setSelectedPromo(null)}
-          onDelete={() => {
-            onDeletePromo?.(selectedPromo.id);
-            setSelectedPromo(null);
-          }}
-          onUpdate={(id, data) => {
-            onUpdatePromo?.(id, data);
-            setSelectedPromo(null);
-          }}
+          onDelete={() => { onDeletePromo?.(selectedPromo.id); setSelectedPromo(null); }}
+          onUpdate={(id, data) => { onUpdatePromo?.(id, data); setSelectedPromo(null); }}
+          isAdmin={isAdmin}
         />
       )}
     </>

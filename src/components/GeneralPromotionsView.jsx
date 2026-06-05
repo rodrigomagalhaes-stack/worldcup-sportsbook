@@ -112,7 +112,7 @@ function GeneralPromotionForm({ initial, onSave, onCancel }) {
   );
 }
 
-function GeneralPromotionRow({ promotion, onDelete, onEdit, onClick }) {
+function GeneralPromotionRow({ promotion, onDelete, onEdit, onClick, isAdmin }) {
   const type = promoTypes.find(t => t.id === promotion.type);
   return (
     <div
@@ -140,29 +140,31 @@ function GeneralPromotionRow({ promotion, onDelete, onEdit, onClick }) {
           </div>
         )}
       </div>
-      <div style={{ display: 'flex', gap: 2, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
-        <button
-          onClick={onEdit}
-          aria-label={`Editar promoção: ${promotion.title}`}
-          style={{ padding: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, transition: 'color .12s', display: 'flex' }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
-          <Edit3 size={14} />
-        </button>
-        <button
-          onClick={onDelete}
-          aria-label={`Deletar promoção: ${promotion.title}`}
-          style={{ padding: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, transition: 'color .12s', display: 'flex' }}
-          onMouseEnter={e => e.currentTarget.style.color = 'var(--red)'}
-          onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
-          <Trash2 size={14} />
-        </button>
-      </div>
+      {isAdmin && (
+        <div style={{ display: 'flex', gap: 2, flexShrink: 0 }} onClick={e => e.stopPropagation()}>
+          <button
+            onClick={onEdit}
+            aria-label={`Editar promoção: ${promotion.title}`}
+            style={{ padding: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, transition: 'color .12s', display: 'flex' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+            <Edit3 size={14} />
+          </button>
+          <button
+            onClick={onDelete}
+            aria-label={`Deletar promoção: ${promotion.title}`}
+            style={{ padding: 6, border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--t3)', borderRadius: 6, transition: 'color .12s', display: 'flex' }}
+            onMouseEnter={e => e.currentTarget.style.color = 'var(--red)'}
+            onMouseLeave={e => e.currentTarget.style.color = 'var(--t3)'}>
+            <Trash2 size={14} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
 
-export default function GeneralPromotionsView({ generalPromotions, onAdd, onUpdate, onDelete }) {
+export default function GeneralPromotionsView({ generalPromotions, onAdd, onUpdate, onDelete, isAdmin }) {
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState(null);
   const [selectedPromotion, setSelectedPromotion] = useState(null);
@@ -172,8 +174,10 @@ export default function GeneralPromotionsView({ generalPromotions, onAdd, onUpda
       <div style={{ textAlign: 'center', padding: '60px 0' }}>
         <div style={{ fontSize: 48, marginBottom: 16 }}>🎯</div>
         <p style={{ fontSize: 15, fontWeight: 500, marginBottom: 6, color: 'var(--t1)' }}>Nenhuma promoção geral cadastrada.</p>
-        <p style={{ fontSize: 13, color: 'var(--t3)', marginBottom: 24 }}>Crie promoções que valem para toda a sportsbook.</p>
-        <button onClick={() => setShowForm(true)}
+        <p style={{ fontSize: 13, color: 'var(--t3)', marginBottom: 24 }}>
+          {isAdmin ? 'Crie promoções que valem para toda a sportsbook.' : 'Nenhuma promoção cadastrada ainda.'}
+        </p>
+        {isAdmin && <button onClick={() => setShowForm(true)}
           style={{
             display: 'inline-flex', alignItems: 'center', gap: 8,
             padding: '12px 28px', borderRadius: 12,
@@ -186,7 +190,7 @@ export default function GeneralPromotionsView({ generalPromotions, onAdd, onUpda
           onMouseLeave={e => { e.currentTarget.style.background = 'var(--green)'; e.currentTarget.style.boxShadow = '0 4px 14px rgba(22,196,127,0.35)'; }}>
           <Plus size={15} />
           Criar primeira promoção
-        </button>
+        </button>}
       </div>
     );
   }
@@ -211,14 +215,15 @@ export default function GeneralPromotionsView({ generalPromotions, onAdd, onUpda
               <GeneralPromotionRow key={promo.id} promotion={promo}
                 onDelete={() => onDelete(promo.id)}
                 onEdit={() => { setEditing(promo); setShowForm(true); }}
-                onClick={() => setSelectedPromotion(promo)} />
+                onClick={() => setSelectedPromotion(promo)}
+                isAdmin={isAdmin} />
             ))}
           </div>
         </div>
       )}
 
       {/* Botão adicionar */}
-      {!showForm && (
+      {!showForm && isAdmin && (
         <button onClick={() => { setEditing(null); setShowForm(true); }}
           style={{
             width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -259,15 +264,9 @@ export default function GeneralPromotionsView({ generalPromotions, onAdd, onUpda
         <GeneralPromotionDetailModal
           promotion={selectedPromotion}
           onClose={() => setSelectedPromotion(null)}
-          onEdit={() => {
-            setEditing(selectedPromotion);
-            setShowForm(true);
-            setSelectedPromotion(null);
-          }}
-          onDelete={() => {
-            onDelete(selectedPromotion.id);
-            setSelectedPromotion(null);
-          }}
+          onEdit={() => { setEditing(selectedPromotion); setShowForm(true); setSelectedPromotion(null); }}
+          onDelete={() => { onDelete(selectedPromotion.id); setSelectedPromotion(null); }}
+          isAdmin={isAdmin}
         />
       )}
     </div>

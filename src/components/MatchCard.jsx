@@ -1,25 +1,10 @@
 import { useState } from 'react';
-import { Plus, Star, MapPin, Settings2 } from 'lucide-react';
+import { Plus, Star, MapPin } from 'lucide-react';
 import { groups, promoTypes } from '../data/matches';
 import Flag from './Flag';
 import EventModal from './EventModal';
 
-function PromoPill({ type }) {
-  const t = promoTypes.find(p => p.id === type);
-  if (!t) return null;
-  return (
-    <span style={{
-      display: 'inline-flex', alignItems: 'center', gap: 4,
-      fontSize: 10, fontWeight: 700, padding: '3px 9px', borderRadius: 99,
-      background: t.tint, color: t.color,
-    }}>
-      <span style={{ fontSize: 11, lineHeight: 1 }}>{t.icon}</span>
-      {t.short}
-    </span>
-  );
-}
-
-export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, isFav = false, onToggleFavorite }) {
+export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, isFav = false, onToggleFavorite, isAdmin }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [starAnim, setStarAnim] = useState(false);
@@ -28,9 +13,6 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
   const hasEvents = events.length > 0;
   const isMadrugada = parseInt(match.timeBRT) <= 4;
 
-  // Tipos únicos de promoção presentes (para as pills)
-  const presentTypes = [...new Set(events.map(e => e.type))];
-
   const handleStarClick = (e) => {
     e.stopPropagation();
     onToggleFavorite?.(match.id);
@@ -38,12 +20,16 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
     setTimeout(() => setStarAnim(false), 300);
   };
 
+  const handleAddClick = (e) => {
+    e.stopPropagation();
+    setModalOpen(true);
+  };
+
   return (
     <>
       <div
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        onClick={() => setModalOpen(true)}
         style={{
           background: isFav ? 'var(--fav-bg)' : 'var(--card)',
           borderRadius: 'var(--radius)',
@@ -55,127 +41,202 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
           borderTop: isFav ? `3px solid var(--fav-top)` : undefined,
           boxShadow: hovered
             ? `var(--shadow), 0 0 0 1px var(--green-glow)`
-            : isFav
-              ? 'var(--shadow)'
-              : 'var(--shadow-sm)',
-          transform: hovered ? 'translateY(-3px)' : 'none',
-          transition: 'background .2s, box-shadow .22s cubic-bezier(.4,0,.2,1), transform .22s, border-color .2s',
+            : isFav ? 'var(--shadow)' : 'var(--shadow-sm)',
+          transition: 'box-shadow .22s cubic-bezier(.4,0,.2,1), border-color .2s',
           position: 'relative',
-          cursor: 'pointer',
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
         }}>
 
-        {/* Faixa: promoção do dia ativa */}
+        {/* Faixa promoção do dia ativa */}
         {dayPromoActive && (
           <button
             onClick={(e) => { e.stopPropagation(); onOpenDayPromo?.(); }}
             title="Ver promoções do dia"
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-              width: '100%', padding: '6px 10px', border: 'none', cursor: 'pointer',
+              width: '100%', padding: '5px 10px', border: 'none', cursor: 'pointer',
               background: 'linear-gradient(135deg, #16C47F 0%, #0fa865 100%)',
-              color: '#fff', fontSize: 10, fontWeight: 800,
+              color: '#fff', fontSize: 9.5, fontWeight: 800,
               letterSpacing: '0.06em', textTransform: 'uppercase',
             }}>
             🎯 Promoção do dia ativa
           </button>
         )}
 
-        {/* Corpo */}
-        <div style={{ padding: '14px 16px 0', display: 'flex', flexDirection: 'column' }}>
-
-          {/* Linha meta: horário + grupo/estrela */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 8, marginBottom: 12 }}>
-            <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              <span style={{
-                fontFamily: 'var(--font-d)', fontSize: 24, fontWeight: 800,
-                color: 'var(--t1)', fontVariantNumeric: 'tabular-nums', lineHeight: 1,
-              }}>
-                {match.timeBRT}
-              </span>
-              <span style={{ fontSize: 9, color: 'var(--t3)', fontWeight: 700, letterSpacing: '0.06em' }}>BRT</span>
-              {isMadrugada && <span style={{ fontSize: 12, lineHeight: 1 }} title="Madrugada">🌙</span>}
-            </div>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: 6, flexShrink: 0 }}>
-              <span style={{
-                fontSize: 9, fontWeight: 800, letterSpacing: '0.06em',
-                padding: '3px 9px', borderRadius: 99,
-                background: gc, color: '#fff',
-              }}>
-                GRUPO {match.group}
-              </span>
-              <button
-                onClick={handleStarClick}
-                className={starAnim ? 'star-pop' : ''}
-                title={isFav ? 'Remover favorito' : 'Adicionar favorito'}
-                style={{
-                  width: 26, height: 26, borderRadius: 7, border: 'none', cursor: 'pointer',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  background: isFav ? 'rgba(217,154,43,0.16)' : 'transparent', transition: 'all .18s',
-                }}
-                onMouseEnter={e => { e.currentTarget.style.background = 'rgba(217,154,43,0.20)'; }}
-                onMouseLeave={e => { e.currentTarget.style.background = isFav ? 'rgba(217,154,43,0.16)' : 'transparent'; }}>
-                <Star size={13} fill={isFav ? '#F4C542' : 'none'} stroke={isFav ? '#F4C542' : 'var(--t3)'} style={{ transition: 'all .18s' }} />
-              </button>
-            </div>
-          </div>
-
-          {/* Times */}
-          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 6, marginBottom: 12 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
-              <Flag team={match.home} size="lg" />
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--t1)', textAlign: 'center', lineHeight: 1.2, minHeight: '2.4em', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {match.home}
-              </span>
-            </div>
-            <div style={{ flexShrink: 0, paddingTop: 18 }}>
-              <span style={{ fontFamily: 'var(--font-d)', fontSize: 10, fontWeight: 700, color: 'var(--t3)', letterSpacing: 2 }}>VS</span>
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flex: 1 }}>
-              <Flag team={match.away} size="lg" />
-              <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--t1)', textAlign: 'center', lineHeight: 1.2, minHeight: '2.4em', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                {match.away}
-              </span>
-            </div>
-          </div>
-
-          {/* Venue */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4, marginBottom: 12 }}>
-            <MapPin size={9} style={{ color: 'var(--t3)', flexShrink: 0 }} />
-            <span style={{ fontSize: 10, color: 'var(--t3)', textAlign: 'center', lineHeight: 1.3 }}>
-              {match.venue} · Rod. {match.matchday}
+        {/* ── Cabeçalho: horário + grupo + estrela ── */}
+        <div style={{ padding: '12px 14px 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 5 }}>
+            <span style={{
+              fontFamily: 'var(--font-d)', fontSize: 22, fontWeight: 800,
+              color: 'var(--t1)', fontVariantNumeric: 'tabular-nums', lineHeight: 1,
+            }}>
+              {match.timeBRT}
             </span>
+            <span style={{ fontSize: 9, color: 'var(--t3)', fontWeight: 700, letterSpacing: '0.06em' }}>BRT</span>
+            {isMadrugada && <span style={{ fontSize: 11, lineHeight: 1 }} title="Madrugada">🌙</span>}
           </div>
-
-          {/* Pills de promoções / vazio */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, justifyContent: 'center', minHeight: 24, marginBottom: 12 }}>
-            {hasEvents ? (
-              presentTypes.map(t => <PromoPill key={t} type={t} />)
-            ) : (
-              <span style={{ fontSize: 11.5, color: 'var(--t3)', fontStyle: 'italic' }}>Sem promoções</span>
-            )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{
+              fontSize: 9, fontWeight: 800, letterSpacing: '0.05em',
+              padding: '3px 8px', borderRadius: 99,
+              background: gc, color: '#fff',
+            }}>
+              GRUPO {match.group}
+            </span>
+            <button
+              onClick={handleStarClick}
+              className={starAnim ? 'star-pop' : ''}
+              title={isFav ? 'Remover favorito' : 'Adicionar favorito'}
+              style={{
+                width: 24, height: 24, borderRadius: 6, border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                background: isFav ? 'rgba(217,154,43,0.16)' : 'transparent', transition: 'all .18s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(217,154,43,0.20)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = isFav ? 'rgba(217,154,43,0.16)' : 'transparent'; }}>
+              <Star size={12} fill={isFav ? '#F4C542' : 'none'} stroke={isFav ? '#F4C542' : 'var(--t3)'} style={{ transition: 'all .18s' }} />
+            </button>
           </div>
         </div>
 
-        {/* Footer — botão real */}
-        <div
-          style={{
-            marginTop: 'auto', borderTop: '1px solid var(--line)',
-            padding: '11px 16px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            fontSize: 12, fontWeight: 700,
-            color: hovered ? 'var(--green)' : (hasEvents ? 'var(--green-dark)' : 'var(--t2)'),
-            background: hovered ? 'var(--green-bg)' : 'transparent',
-            transition: 'color .15s, background .15s',
-          }}>
-          {hasEvents ? <Settings2 size={13} /> : <Plus size={13} style={{ color: 'var(--green)' }} />}
-          {hasEvents ? `Gerenciar ${events.length} ${events.length > 1 ? 'promoções' : 'promoção'}` : 'Adicionar promoção'}
+        {/* ── Times: bandeiras em linha ── */}
+        <div style={{ padding: '10px 14px 8px', display: 'flex', alignItems: 'center', gap: 8, minWidth: 0 }}>
+          {/* Casa */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0 }}>
+            <Flag team={match.home} size="md" />
+            <span style={{
+              fontSize: 13, fontWeight: 700, color: 'var(--t1)', lineHeight: 1.2,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0,
+            }}>
+              {match.home}
+            </span>
+          </div>
+          {/* VS */}
+          <span style={{
+            fontFamily: 'var(--font-d)', fontSize: 9, fontWeight: 700,
+            color: 'var(--t3)', letterSpacing: 2, flexShrink: 0,
+          }}>vs</span>
+          {/* Visitante */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
+            <span style={{
+              fontSize: 13, fontWeight: 700, color: 'var(--t1)', lineHeight: 1.2,
+              overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
+              textAlign: 'right', minWidth: 0,
+            }}>
+              {match.away}
+            </span>
+            <Flag team={match.away} size="md" />
+          </div>
+        </div>
+
+        {/* Venue */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '0 14px 12px' }}>
+          <MapPin size={9} style={{ color: 'var(--t3)', flexShrink: 0 }} />
+          <span style={{ fontSize: 10, color: 'var(--t3)', lineHeight: 1.3 }}>
+            {match.venue} · Rod. {match.matchday}
+          </span>
+        </div>
+
+        {/* ── Seção de promoções ── */}
+        <div style={{ borderTop: '1px solid var(--line)', flex: 1 }}>
+
+          {/* Cabeçalho da seção */}
+          <div style={{ padding: '10px 14px 6px', display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+              Promoções
+            </span>
+            {hasEvents && (
+              <span style={{
+                fontSize: 10, fontWeight: 800,
+                minWidth: 18, height: 18, padding: '0 5px', borderRadius: 99,
+                background: 'var(--green)', color: '#fff',
+                display: 'inline-flex', alignItems: 'center', justifyContent: 'center',
+              }}>
+                {events.length}
+              </span>
+            )}
+          </div>
+
+          {/* Lista de promoções */}
+          {hasEvents ? (
+            <div style={{ display: 'flex', flexDirection: 'column' }}>
+              {events.map((ev, i) => {
+                const t = promoTypes.find(p => p.id === ev.type);
+                const isLast = i === events.length - 1;
+                return (
+                  <div
+                    key={ev.id}
+                    onClick={() => setModalOpen(true)}
+                    style={{
+                      display: 'flex', alignItems: 'flex-start', gap: 10,
+                      padding: '9px 14px',
+                      borderTop: i === 0 ? 'none' : '1px solid var(--line)',
+                      borderBottom: isLast && !isAdmin ? 'none' : undefined,
+                      cursor: 'pointer', transition: 'background .12s',
+                    }}
+                    onMouseEnter={e => e.currentTarget.style.background = 'var(--card2)'}
+                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                  >
+                    {/* Ícone colorido */}
+                    <div style={{
+                      width: 30, height: 30, borderRadius: 8, flexShrink: 0,
+                      background: t?.tint || 'var(--card2)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontSize: 15,
+                    }}>
+                      {t?.icon}
+                    </div>
+                    {/* Texto */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 12.5, fontWeight: 700, color: 'var(--t1)', lineHeight: 1.3, marginBottom: ev.description ? 2 : 0 }}>
+                        {ev.title}
+                      </div>
+                      {ev.description && (
+                        <div style={{
+                          fontSize: 11, color: 'var(--t2)', lineHeight: 1.4,
+                          overflow: 'hidden', display: '-webkit-box',
+                          WebkitLineClamp: 2, WebkitBoxOrient: 'vertical',
+                        }}>
+                          {ev.description}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{ padding: '8px 14px 12px' }}>
+              <span style={{ fontSize: 11.5, color: 'var(--t3)', fontStyle: 'italic' }}>Sem promoções cadastradas</span>
+            </div>
+          )}
+
+          {/* Botão adicionar — só admin */}
+          {isAdmin && (
+            <button
+              onClick={handleAddClick}
+              style={{
+                width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                padding: '11px 14px',
+                border: 'none', borderTop: '1px solid var(--line)',
+                background: 'transparent',
+                color: 'var(--green)', cursor: 'pointer',
+                fontSize: 12, fontWeight: 700,
+                transition: 'background .15s',
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'var(--green-bg)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              <Plus size={13} />
+              Adicionar promoção
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Modal de eventos do jogo */}
+      {/* Modal */}
       {modalOpen && (
         <EventModal
           match={match}
@@ -185,6 +246,7 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
           onUpdate={onUpdate}
           onClose={() => setModalOpen(false)}
           groupColor={gc}
+          isAdmin={isAdmin}
         />
       )}
     </>

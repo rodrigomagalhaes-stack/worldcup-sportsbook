@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, CalendarRange, BarChart3, Zap, Sun, Moon, Printer, Loader2, Megaphone, LayoutGrid } from 'lucide-react';
+import { CalendarDays, CalendarRange, BarChart3, Zap, Sun, Moon, Printer, Loader2, Megaphone, LayoutGrid, LogIn, LogOut, ShieldCheck } from 'lucide-react';
 import { format } from 'date-fns';
 import DateBar from './components/DateBar';
 import DayView from './components/DayView';
@@ -9,7 +9,8 @@ import GeneralPromotionsView from './components/GeneralPromotionsView';
 import CalendarView from './components/CalendarView';
 import GroupsView from './components/GroupsView';
 import PromoDrawer from './components/PromoDrawer';
-import { useStore, useTheme } from './hooks/useStore';
+import LoginModal from './components/LoginModal';
+import { useStore, useTheme, useAuth } from './hooks/useStore';
 import { matches } from './data/matches';
 
 function getDefault() {
@@ -30,6 +31,8 @@ export default function App() {
   const [tab, setTab] = useState('day');
   const [date, setDate] = useState(getDefault);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const { isAdmin, signIn, signOut } = useAuth();
   const {
     events, loading, addEvent, updateEvent, deleteEvent,
     generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal,
@@ -139,6 +142,17 @@ export default function App() {
 
           {/* Right actions */}
           <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 8 }}>
+            {isAdmin && (
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 6,
+                padding: '5px 10px', borderRadius: 99,
+                background: 'rgba(22,196,127,0.12)', border: '1px solid var(--green)',
+                color: 'var(--green)', fontSize: 11, fontWeight: 600,
+              }}>
+                <ShieldCheck size={12} />
+                Admin
+              </div>
+            )}
             <button onClick={() => window.print()} title="Imprimir"
               style={{
                 width: 36, height: 36, borderRadius: 'var(--radius-xs)',
@@ -168,6 +182,23 @@ export default function App() {
                 {theme === 'dark' ? 'Claro' : 'Escuro'}
               </span>
               {theme === 'dark' ? 'Claro' : 'Escuro'}
+            </button>
+
+            <button
+              onClick={isAdmin ? signOut : () => setLoginOpen(true)}
+              title={isAdmin ? 'Sair da conta admin' : 'Entrar como admin'}
+              style={{
+                display: 'flex', alignItems: 'center', gap: 7,
+                padding: '7px clamp(10px,1.5vw,16px)',
+                borderRadius: 'var(--radius-xs)', border: '1px solid var(--line)',
+                background: 'var(--card2)', color: 'var(--t2)', cursor: 'pointer',
+                fontSize: 'clamp(11px,1.2vw,13px)', fontWeight: 500,
+                transition: 'all .15s',
+              }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--green)'; e.currentTarget.style.color = 'var(--green)'; e.currentTarget.style.background = 'var(--green-bg)'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--line)'; e.currentTarget.style.color = 'var(--t2)'; e.currentTarget.style.background = 'var(--card2)'; }}>
+              {isAdmin ? <LogOut size={13} /> : <LogIn size={13} />}
+              {isAdmin ? 'Sair' : 'Admin'}
             </button>
           </div>
         </div>
@@ -206,7 +237,8 @@ export default function App() {
                 onDeleteDayPromo={deleteDayPromotionLocal}
                 onUpdateDayPromo={updateDayPromotionLocal}
                 favorites={favorites}
-                onToggleFavorite={toggleFavorite} />
+                onToggleFavorite={toggleFavorite}
+                isAdmin={isAdmin} />
             </motion.div>
           )}
           {tab === 'calendar' && (
@@ -242,7 +274,7 @@ export default function App() {
                   </h1>
                   <p style={{ fontSize: 14, color: 'var(--t2)', marginTop: 6 }}>Todos os eventos cadastrados na Copa 2026</p>
                 </div>
-                <SummaryView events={events} onDelete={deleteEvent} onUpdate={updateEvent} generalPromotions={generalPromotions} />
+                <SummaryView events={events} onDelete={deleteEvent} onUpdate={updateEvent} generalPromotions={generalPromotions} isAdmin={isAdmin} />
               </div>
             </motion.div>
           )}
@@ -255,6 +287,7 @@ export default function App() {
                 onAdd={addGeneralPromotion}
                 onUpdate={updateGeneralPromotionLocal}
                 onDelete={deleteGeneralPromotionLocal}
+                isAdmin={isAdmin}
               />
             </motion.div>
           )}
@@ -276,7 +309,15 @@ export default function App() {
         onAddStandby={data => addDayPromotion({ date, type: data.type, title: data.title, description: data.description, state: data.status || 'standby' })}
         onDeleteStandby={deleteDayPromotionLocal}
         onActivate={activateStandbyPromotion}
+        isAdmin={isAdmin}
       />
+
+      {loginOpen && (
+        <LoginModal
+          onLogin={signIn}
+          onClose={() => setLoginOpen(false)}
+        />
+      )}
     </div>
   );
 }
