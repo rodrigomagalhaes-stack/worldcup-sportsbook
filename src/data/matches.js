@@ -14,22 +14,18 @@ export const teamFlags = {
 };
 
 export const groups = {
-  A:{color:'#C0773F'}, B:{color:'#BC5A57'}, C:{color:'#4E9C66'},
-  D:{color:'#4D82BE'}, E:{color:'#8369B6'}, F:{color:'#BB6398'},
-  G:{color:'#3F9B92'}, H:{color:'#B5933D'}, I:{color:'#6A70BE'},
-  J:{color:'#3F97AC'}, K:{color:'#7E9A47'}, L:{color:'#A263B8'},
+  A:{color:'#f97316'}, B:{color:'#ef4444'}, C:{color:'#16a34a'},
+  D:{color:'#3b82f6'}, E:{color:'#8b5cf6'}, F:{color:'#ec4899'},
+  G:{color:'#14b8a6'}, H:{color:'#f59e0b'}, I:{color:'#6366f1'},
+  J:{color:'#06b6d4'}, K:{color:'#84cc16'}, L:{color:'#a855f7'},
 };
 
 export const promoTypes = [
-  { id:'boost',   label:'Boost de Odds',    short:'Boost',   color:'#D99A2B', tint:'#FBF1DA', icon:'🚀' },
-  { id:'mercado', label:'CRM',              short:'CRM',     color:'#3D7DC4', tint:'#E4EDF8', icon:'⚡' },
-  { id:'promo',   label:'Promoção do Dia',  short:'Promo',   color:'#13A06C', tint:'#DCF1E8', icon:'🎯' },
+  { id:'boost',   label:'Boost de Odds',     color:'#f59e0b', icon:'🚀' },
+  { id:'mercado', label:'Mercado Especial',   color:'#3b82f6', icon:'⚡' },
+  { id:'promo',   label:'Promoção do Dia',    color:'#16a34a', icon:'🎯' },
+  { id:'growth',  label:'Growth',             color:'#a855f7', icon:'📈' },
 ];
-
-export const promoStatuses = {
-  standby:    { label:'Stand by', color:'#B5853A', tint:'rgba(181,133,58,0.12)' },
-  suggestion: { label:'Sugestão', color:'#6E63D6', tint:'rgba(110,99,214,0.13)' },
-};
 
 export const matches = [
   // RODADA 1
