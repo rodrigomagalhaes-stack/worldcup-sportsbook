@@ -24,6 +24,7 @@ export const promoTypes = [
   { id:'boost',   label:'Boost de Odds',     color:'#f59e0b', icon:'🚀' },
   { id:'mercado', label:'Mercado Especial',   color:'#3b82f6', icon:'⚡' },
   { id:'promo',   label:'Promoção do Dia',    color:'#16a34a', icon:'🎯' },
+  { id:'growth',  label:'Growth',             color:'#a855f7', icon:'📈' },
 ];
 
 export const matches = [
