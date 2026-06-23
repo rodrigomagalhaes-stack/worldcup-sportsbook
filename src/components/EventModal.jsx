@@ -229,7 +229,7 @@ export default function EventModal({ match, events, onAdd, onDelete, onUpdate, o
                   background: groupColor + '18', color: groupColor, border: `1px solid ${groupColor}30`,
                   flexShrink: 0,
                 }}>
-                  GRUPO {match.group}
+                  {match.group ? `GRUPO ${match.group}` : (match.round || 'MATA-MATA').toUpperCase()}
                 </span>
                 <span style={{ fontSize: 15, fontWeight: 800, color: 'var(--t1)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                   {match.home} <span style={{ color: 'var(--t3)', fontWeight: 400 }}>vs</span> {match.away}
@@ -240,7 +240,7 @@ export default function EventModal({ match, events, onAdd, onDelete, onUpdate, o
                   {match.timeBRT} <span style={{ fontSize: 11, fontWeight: 500, color: 'var(--t3)' }}>BRT</span>
                 </span>
                 <span style={{ fontSize: 11, color: 'var(--t3)' }}>
-                  {match.venue} · Rodada {match.matchday}
+                  {match.venue}{match.matchday ? ` · Rodada ${match.matchday}` : ''}
                 </span>
               </div>
             </div>

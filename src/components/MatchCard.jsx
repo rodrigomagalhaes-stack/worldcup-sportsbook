@@ -58,6 +58,7 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
   const isFinished = result?.status === 'finished' && result.home_score != null && result.away_score != null;
 
   const gc = match.group ? (groups[match.group]?.color || '#888') : '#6366f1';
+  const isKnockout = !!match.__knockout;
   const hasEvents = events.length > 0;
   const isMadrugada = parseInt(match.timeBRT) <= 4;
 
@@ -222,6 +223,9 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
         )}
 
         {/* ── Seção de promoções ── */}
+        {/* Não suportado para jogos do mata-mata: a tabela events tem FK
+            para matches(id), que só cobre a fase de grupos (1-72). */}
+        {!isKnockout && (
         <div style={{ borderTop: '1px solid var(--line)', flex: 1 }}>
 
           {/* Cabeçalho da seção */}
@@ -316,10 +320,11 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
             </button>
           )}
         </div>
+        )}
       </div>
 
-      {/* Modal */}
-      {modalOpen && (
+      {/* Modal — não suportado para mata-mata (ver nota acima) */}
+      {modalOpen && !isKnockout && (
         <EventModal
           match={match}
           events={events}
