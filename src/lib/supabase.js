@@ -141,6 +141,66 @@ export async function deleteDayPromotion(promoId) {
   if (error) throw error;
 }
 
+// ── Match Results (placar real da fase de grupos) ───────────
+
+export async function fetchMatchResults() {
+  const { data, error } = await supabase
+    .from('match_results')
+    .select('*');
+  if (error) throw error;
+  return data.reduce((acc, r) => { acc[r.match_id] = r; return acc; }, {});
+}
+
+export async function upsertMatchResult(matchId, patch) {
+  const { data, error } = await supabase
+    .from('match_results')
+    .upsert({ match_id: matchId, ...patch }, { onConflict: 'match_id' })
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// ── Knockout Matches (mata-mata) ─────────────────────────────
+
+export async function fetchKnockoutMatches() {
+  const { data, error } = await supabase
+    .from('knockout_matches')
+    .select('*')
+    .order('id');
+  if (error) throw error;
+  return data;
+}
+
+export async function upsertKnockoutMatch(id, patch) {
+  const { data, error } = await supabase
+    .from('knockout_matches')
+    .update(patch)
+    .eq('id', id)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+// ── Sync Status (live sync com football-data.org) ───────────
+
+export async function fetchSyncStatus() {
+  const { data, error } = await supabase
+    .from('sync_status')
+    .select('*')
+    .eq('id', 1)
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+export async function triggerSync() {
+  const { data, error } = await supabase.functions.invoke('sync-worldcup');
+  if (error) throw error;
+  return data;
+}
+
 // ── Favorites ────────────────────────────────────────────────
 
 export async function fetchFavorites() {

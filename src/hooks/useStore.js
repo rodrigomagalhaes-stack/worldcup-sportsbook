@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { fetchAllEvents, insertEvent, updateEvent as sbUpdate, deleteEvent as sbDelete, fetchGeneralPromotions, insertGeneralPromotion, updateGeneralPromotion as sbUpdateGP, deleteGeneralPromotion, fetchDayPromotions, insertDayPromotion, updateDayPromotion as sbUpdateDP, deleteDayPromotion, fetchFavorites, insertFavorite, deleteFavorite, supabase } from '../lib/supabase';
+import { fetchAllEvents, insertEvent, updateEvent as sbUpdate, deleteEvent as sbDelete, fetchGeneralPromotions, insertGeneralPromotion, updateGeneralPromotion as sbUpdateGP, deleteGeneralPromotion, fetchDayPromotions, insertDayPromotion, updateDayPromotion as sbUpdateDP, deleteDayPromotion, fetchFavorites, insertFavorite, deleteFavorite, fetchMatchResults, upsertMatchResult, fetchKnockoutMatches, upsertKnockoutMatch, fetchSyncStatus, triggerSync, supabase } from '../lib/supabase';
 
 const DAY_PROMO_LIMIT_MSG = 'Limite de 2 promoções do dia ativas atingido para esta data.';
 
@@ -11,6 +11,9 @@ export function useStore() {
   const [events, setEvents] = useState({});
   const [generalPromotions, setGeneralPromotions] = useState([]);
   const [dayPromotions, setDayPromotions] = useState([]);
+  const [matchResults, setMatchResults] = useState({});
+  const [knockoutMatches, setKnockoutMatches] = useState([]);
+  const [syncStatus, setSyncStatus] = useState(null);
   const [favorites, setFavorites] = useState(() => {
     // Fallback: localStorage para visitantes antes do fetch terminar
     try { return new Set(JSON.parse(localStorage.getItem('sb_favs') || '[]')); } catch { return new Set(); }
@@ -22,6 +25,9 @@ export function useStore() {
       fetchAllEvents().then(setEvents),
       fetchGeneralPromotions().then(setGeneralPromotions),
       fetchDayPromotions().then(setDayPromotions),
+      fetchMatchResults().then(setMatchResults),
+      fetchKnockoutMatches().then(setKnockoutMatches),
+      fetchSyncStatus().then(setSyncStatus).catch(() => {}),
       fetchFavorites().then(favSet => {
         setFavorites(favSet);
         // Sincroniza localStorage com o banco
@@ -30,6 +36,36 @@ export function useStore() {
     ])
       .catch(err => console.error('Supabase fetch error:', err))
       .finally(() => setLoading(false));
+  }, []);
+
+  // Dados reais (placar/status) são atualizados no servidor por um cron a
+  // cada poucos minutos — repolling periódico mantém a tela ao vivo sem
+  // exigir refresh manual.
+  useEffect(() => {
+    const id = setInterval(() => {
+      fetchMatchResults().then(setMatchResults).catch(() => {});
+      fetchKnockoutMatches().then(setKnockoutMatches).catch(() => {});
+      fetchSyncStatus().then(setSyncStatus).catch(() => {});
+    }, 60_000);
+    return () => clearInterval(id);
+  }, []);
+
+  const syncNow = useCallback(async () => {
+    setSyncStatus(s => ({ ...(s || {}), status: 'running' }));
+    try {
+      await triggerSync();
+    } catch (err) {
+      console.error('syncNow error:', err);
+    } finally {
+      const [mr, ko, ss] = await Promise.all([
+        fetchMatchResults().catch(() => null),
+        fetchKnockoutMatches().catch(() => null),
+        fetchSyncStatus().catch(() => null),
+      ]);
+      if (mr) setMatchResults(mr);
+      if (ko) setKnockoutMatches(ko);
+      if (ss) setSyncStatus(ss);
+    }
   }, []);
 
   const addEvent = useCallback(async (matchId, ev) => {
@@ -136,6 +172,35 @@ export function useStore() {
     return updateDayPromotionLocal(id, { state: 'active' });
   }, [updateDayPromotionLocal]);
 
+  // ── Match Results (placar fase de grupos, optimistic) ───
+  const updateMatchResult = useCallback(async (matchId, patch) => {
+    let snapshot;
+    setMatchResults(p => { snapshot = p; return { ...p, [matchId]: { ...p[matchId], match_id: matchId, ...patch } }; });
+    try {
+      const saved = await upsertMatchResult(matchId, patch);
+      setMatchResults(p => ({ ...p, [matchId]: saved }));
+    } catch (err) {
+      if (snapshot) setMatchResults(snapshot);
+      console.error('updateMatchResult error:', err);
+    }
+  }, []);
+
+  // ── Knockout Matches (mata-mata, optimistic) ────────────
+  const updateKnockoutMatch = useCallback(async (id, patch) => {
+    let snapshot;
+    setKnockoutMatches(p => {
+      snapshot = p;
+      return p.map(m => (m.id === id ? { ...m, ...patch } : m));
+    });
+    try {
+      const saved = await upsertKnockoutMatch(id, patch);
+      setKnockoutMatches(p => p.map(m => (m.id === id ? saved : m)));
+    } catch (err) {
+      if (snapshot) setKnockoutMatches(snapshot);
+      console.error('updateKnockoutMatch error:', err);
+    }
+  }, []);
+
   // ── Favorites (optimistic) ───────────────────────────────
   const toggleFavorite = useCallback(async (matchId) => {
     const isFav = favorites.has(matchId);
@@ -165,6 +230,9 @@ export function useStore() {
     events, loading, addEvent, updateEvent, deleteEvent,
     generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal,
     dayPromotions, addDayPromotion, updateDayPromotionLocal, deleteDayPromotionLocal, activateStandbyPromotion,
+    matchResults, updateMatchResult,
+    knockoutMatches, updateKnockoutMatch,
+    syncStatus, syncNow,
     favorites, toggleFavorite,
   };
 }

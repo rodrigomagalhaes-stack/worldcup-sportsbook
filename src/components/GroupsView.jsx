@@ -3,12 +3,13 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { matches, groups } from '../data/matches';
 import Flag from './Flag';
+import SyncBadge from './SyncBadge';
 
 /* ─────────────────────────────────────────
    Deriva a estrutura de grupo a partir dos matches.
    Retorna: { A: { color, teams, standings, fixtures }, ... }
 ───────────────────────────────────────── */
-function deriveGroups() {
+function deriveGroups(matchResults = {}) {
   const ORDER = Object.keys(groups); // A..L em ordem
   const data = {};
 
@@ -18,7 +19,8 @@ function deriveGroups() {
         a.matchday - b.matchday ||
         a.date.localeCompare(b.date) ||
         a.timeBRT.localeCompare(b.timeBRT)
-      );
+      )
+      .map(m => ({ ...m, result: matchResults[m.id] }));
 
     // Teams: ordem de primeira aparição
     const teamSet = [];
@@ -29,14 +31,15 @@ function deriveGroups() {
       });
     });
 
-    // Standings: estrutura zerada, pronta para receber scores no futuro
+    // Standings: estrutura zerada
     const standings = teamSet.map(name => ({
       name, P: 0, W: 0, D: 0, L: 0, GF: 0, GA: 0,
     }));
-    // Se algum match tiver score, calcula pontos (hook futuro)
+    // Considera apenas jogos finalizados (placar real, vindo do Supabase)
     gc.forEach(m => {
-      if (m.score) {
-        const [hg, ag] = m.score.split('-').map(Number);
+      const r = m.result;
+      if (r?.status === 'finished' && r.home_score != null && r.away_score != null) {
+        const hg = r.home_score, ag = r.away_score;
         const hIdx = standings.findIndex(s => s.name === m.home);
         const aIdx = standings.findIndex(s => s.name === m.away);
         if (hIdx < 0 || aIdx < 0) return;
@@ -117,6 +120,9 @@ function StandingTable({ standings, color }) {
 function FixtureRow({ match, promoCount, onPick }) {
   const [hov, setHov] = useState(false);
   const dateLabel = format(parseISO(match.date), "d MMM", { locale: ptBR });
+  const r = match.result;
+  const isLive = r?.status === 'live';
+  const isFinished = r?.status === 'finished' && r.home_score != null && r.away_score != null;
 
   return (
     <div
@@ -155,7 +161,17 @@ function FixtureRow({ match, promoCount, onPick }) {
           </span>
           <Flag team={match.home} size="sm" />
         </div>
-        <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--t3)', flexShrink: 0 }}>VS</span>
+        {isFinished || isLive ? (
+          <span style={{
+            fontSize: 12, fontWeight: 800, flexShrink: 0, fontVariantNumeric: 'tabular-nums',
+            color: isLive ? '#E0383F' : 'var(--t1)', display: 'flex', alignItems: 'center', gap: 4,
+          }}>
+            {isLive && <span style={{ width: 6, height: 6, borderRadius: 99, background: '#E0383F', display: 'inline-block', animation: 'pulse-dot 1.2s infinite' }} />}
+            {r.home_score ?? 0}–{r.away_score ?? 0}
+          </span>
+        ) : (
+          <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--t3)', flexShrink: 0 }}>VS</span>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: 5, flex: 1, justifyContent: 'flex-start', minWidth: 0 }}>
           <Flag team={match.away} size="sm" />
           <span style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--t1)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -270,8 +286,8 @@ function GroupCard({ letter, data, dayPromoCounts, onPick }) {
 /* ─────────────────────────────────────────
    Componente principal
 ───────────────────────────────────────── */
-export default function GroupsView({ dayPromoCounts = {}, onPick }) {
-  const groupData = useMemo(() => deriveGroups(), []);
+export default function GroupsView({ dayPromoCounts = {}, onPick, matchResults = {}, syncStatus, onSyncNow, isAdmin }) {
+  const groupData = useMemo(() => deriveGroups(matchResults), [matchResults]);
   const totalTeams = useMemo(() => {
     const s = new Set();
     matches.forEach(m => { s.add(m.home); s.add(m.away); });
@@ -293,18 +309,23 @@ export default function GroupsView({ dayPromoCounts = {}, onPick }) {
         <div style={{
           marginBottom: 32, paddingBottom: 24,
           borderBottom: '1px solid var(--line)',
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          gap: 16, flexWrap: 'wrap',
         }}>
-          <h1 style={{
-            fontFamily: 'var(--font-d)',
-            fontSize: 'clamp(24px,4vw,36px)',
-            fontWeight: 800, color: 'var(--t1)',
-            letterSpacing: '0.02em', lineHeight: 1,
-          }}>
-            Fase de Grupos
-          </h1>
-          <p style={{ fontSize: 13, color: 'var(--t2)', marginTop: 6 }}>
-            {Object.keys(groupData).length} grupos · {totalTeams} seleções
-          </p>
+          <div>
+            <h1 style={{
+              fontFamily: 'var(--font-d)',
+              fontSize: 'clamp(24px,4vw,36px)',
+              fontWeight: 800, color: 'var(--t1)',
+              letterSpacing: '0.02em', lineHeight: 1,
+            }}>
+              Fase de Grupos
+            </h1>
+            <p style={{ fontSize: 13, color: 'var(--t2)', marginTop: 6 }}>
+              {Object.keys(groupData).length} grupos · {totalTeams} seleções · placares ao vivo via football-data.org
+            </p>
+          </div>
+          <SyncBadge syncStatus={syncStatus} onSyncNow={onSyncNow} isAdmin={isAdmin} />
         </div>
 
         {/* Grade de cards */}

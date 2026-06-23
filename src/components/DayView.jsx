@@ -133,7 +133,7 @@ function BoostSummaryCard({ detailsByTimeBRT, dayMatches, loading }) {
   );
 }
 
-export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, promos = [], onDeleteDayPromo, onUpdateDayPromo, favorites, onToggleFavorite, isAdmin }) {
+export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, promos = [], onDeleteDayPromo, onUpdateDayPromo, favorites, onToggleFavorite, isAdmin, matchResults = {}, onUpdateMatchResult }) {
   const { detailsByTimeBRT, boostsByTimeBRT, loading: boostsLoading } = useAltenarBoosts(selectedDate);
 
   // Ordenação: madrugada (01/02h) vem ANTES dos demais
@@ -242,6 +242,8 @@ export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdat
                 isFav={favorites ? favorites.has(m.id) : false}
                 onToggleFavorite={onToggleFavorite}
                 isAdmin={isAdmin}
+                result={matchResults[m.id]}
+                onUpdateResult={onUpdateMatchResult}
               />
             </motion.div>
           ))}

@@ -1,13 +1,61 @@
 import { useState } from 'react';
-import { Plus, Star, MapPin } from 'lucide-react';
+import { Plus, Star, MapPin, Pencil } from 'lucide-react';
 import { groups, promoTypes } from '../data/matches';
 import Flag from './Flag';
 import EventModal from './EventModal';
 
-export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, isFav = false, onToggleFavorite, isAdmin }) {
+const STATUS_OPTIONS = [
+  { id: 'scheduled', label: 'A confirmar' },
+  { id: 'live', label: 'Ao vivo' },
+  { id: 'finished', label: 'Finalizado' },
+];
+
+function ResultEditor({ match, result, onUpdateResult, onClose }) {
+  const [status, setStatus] = useState(result?.status || 'scheduled');
+  const [homeScore, setHomeScore] = useState(result?.home_score ?? '');
+  const [awayScore, setAwayScore] = useState(result?.away_score ?? '');
+
+  const handleSave = (e) => {
+    e.stopPropagation();
+    onUpdateResult?.(match.id, {
+      status,
+      home_score: homeScore === '' ? null : Number(homeScore),
+      away_score: awayScore === '' ? null : Number(awayScore),
+    });
+    onClose();
+  };
+
+  return (
+    <div onClick={e => e.stopPropagation()} style={{
+      padding: '10px 14px', display: 'flex', alignItems: 'center', gap: 8,
+      background: 'var(--card2)', borderTop: '1px solid var(--line)',
+    }}>
+      <input type="number" value={homeScore} onChange={e => setHomeScore(e.target.value)}
+        placeholder={match.home.slice(0, 3)}
+        style={{ width: 40, padding: '5px 6px', borderRadius: 6, border: '1px solid var(--line2)', background: 'var(--bg)', color: 'var(--t1)', fontSize: 12, textAlign: 'center' }} />
+      <span style={{ color: 'var(--t3)', fontSize: 11 }}>×</span>
+      <input type="number" value={awayScore} onChange={e => setAwayScore(e.target.value)}
+        placeholder={match.away.slice(0, 3)}
+        style={{ width: 40, padding: '5px 6px', borderRadius: 6, border: '1px solid var(--line2)', background: 'var(--bg)', color: 'var(--t1)', fontSize: 12, textAlign: 'center' }} />
+      <select value={status} onChange={e => setStatus(e.target.value)}
+        style={{ flex: 1, padding: '5px 6px', borderRadius: 6, border: '1px solid var(--line2)', background: 'var(--bg)', color: 'var(--t1)', fontSize: 11 }}>
+        {STATUS_OPTIONS.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+      </select>
+      <button onClick={handleSave} style={{
+        padding: '5px 10px', borderRadius: 6, border: 'none', background: 'var(--green)',
+        color: '#fff', fontSize: 11, fontWeight: 700, cursor: 'pointer',
+      }}>Salvar</button>
+    </div>
+  );
+}
+
+export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, isFav = false, onToggleFavorite, isAdmin, result, onUpdateResult }) {
   const [modalOpen, setModalOpen] = useState(false);
   const [hovered, setHovered] = useState(false);
   const [starAnim, setStarAnim] = useState(false);
+  const [editingResult, setEditingResult] = useState(false);
+  const isLive = result?.status === 'live';
+  const isFinished = result?.status === 'finished' && result.home_score != null && result.away_score != null;
 
   const gc = groups[match.group]?.color || '#888';
   const hasEvents = events.length > 0;
@@ -113,11 +161,27 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
               {match.home}
             </span>
           </div>
-          {/* VS */}
-          <span style={{
-            fontFamily: 'var(--font-d)', fontSize: 9, fontWeight: 700,
-            color: 'var(--t3)', letterSpacing: 2, flexShrink: 0,
-          }}>vs</span>
+          {/* VS / Placar */}
+          {isFinished || isLive ? (
+            <span style={{
+              fontFamily: 'var(--font-d)', fontSize: 16, fontWeight: 800, flexShrink: 0,
+              color: isLive ? '#E0383F' : 'var(--t1)', display: 'flex', alignItems: 'center', gap: 5,
+              fontVariantNumeric: 'tabular-nums',
+            }}>
+              {isLive && (
+                <span style={{
+                  width: 6, height: 6, borderRadius: 99, background: '#E0383F', display: 'inline-block',
+                  animation: 'pulse-dot 1.2s infinite',
+                }} />
+              )}
+              {result.home_score ?? 0}-{result.away_score ?? 0}
+            </span>
+          ) : (
+            <span style={{
+              fontFamily: 'var(--font-d)', fontSize: 9, fontWeight: 700,
+              color: 'var(--t3)', letterSpacing: 2, flexShrink: 0,
+            }}>vs</span>
+          )}
           {/* Visitante */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 6, flex: 1, minWidth: 0, justifyContent: 'flex-end' }}>
             <span style={{
@@ -132,12 +196,30 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
         </div>
 
         {/* Venue */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 4, padding: '0 14px 12px' }}>
-          <MapPin size={9} style={{ color: 'var(--t3)', flexShrink: 0 }} />
-          <span style={{ fontSize: 10, color: 'var(--t3)', lineHeight: 1.3 }}>
-            {match.venue} · Rod. {match.matchday}
-          </span>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 4, padding: '0 14px 12px' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
+            <MapPin size={9} style={{ color: 'var(--t3)', flexShrink: 0 }} />
+            <span style={{ fontSize: 10, color: 'var(--t3)', lineHeight: 1.3 }}>
+              {match.venue} · Rod. {match.matchday}
+            </span>
+          </div>
+          {isAdmin && (
+            <button
+              onClick={e => { e.stopPropagation(); setEditingResult(p => !p); }}
+              title="Editar placar/status"
+              style={{
+                width: 20, height: 20, borderRadius: 5, border: 'none', cursor: 'pointer',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                background: editingResult ? 'var(--green-bg)' : 'transparent', color: 'var(--t3)',
+              }}>
+              <Pencil size={10} />
+            </button>
+          )}
         </div>
+
+        {editingResult && (
+          <ResultEditor match={match} result={result} onUpdateResult={onUpdateResult} onClose={() => setEditingResult(false)} />
+        )}
 
         {/* ── Seção de promoções ── */}
         <div style={{ borderTop: '1px solid var(--line)', flex: 1 }}>

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { CalendarDays, CalendarRange, BarChart3, Zap, Sun, Moon, Printer, Loader2, Megaphone, LayoutGrid, LogIn, LogOut, ShieldCheck } from 'lucide-react';
+import { CalendarDays, CalendarRange, BarChart3, Zap, Sun, Moon, Printer, Loader2, Megaphone, LayoutGrid, LogIn, LogOut, ShieldCheck, GitBranch } from 'lucide-react';
 import { format } from 'date-fns';
 import DateBar from './components/DateBar';
 import DayView from './components/DayView';
@@ -8,6 +8,7 @@ import SummaryView from './components/SummaryView';
 import GeneralPromotionsView from './components/GeneralPromotionsView';
 import CalendarView from './components/CalendarView';
 import GroupsView from './components/GroupsView';
+import KnockoutView from './components/KnockoutView';
 import PromoDrawer from './components/PromoDrawer';
 import LoginModal from './components/LoginModal';
 import { useStore, useTheme, useAuth } from './hooks/useStore';
@@ -23,6 +24,7 @@ const TABS = [
   { id: 'day',      label: 'Dia',        icon: CalendarDays },
   { id: 'calendar', label: 'Calendário', icon: CalendarRange },
   { id: 'groups',   label: 'Grupos',     icon: LayoutGrid },
+  { id: 'knockout', label: 'Mata-mata',  icon: GitBranch },
   { id: 'summary',  label: 'Resumo',     icon: BarChart3 },
   { id: 'general',  label: 'Geral',      icon: Zap },
 ];
@@ -37,6 +39,9 @@ export default function App() {
     events, loading, addEvent, updateEvent, deleteEvent,
     generalPromotions, addGeneralPromotion, updateGeneralPromotionLocal, deleteGeneralPromotionLocal,
     dayPromotions, addDayPromotion, updateDayPromotionLocal, deleteDayPromotionLocal, activateStandbyPromotion,
+    matchResults, updateMatchResult,
+    knockoutMatches, updateKnockoutMatch,
+    syncStatus, syncNow,
     favorites, toggleFavorite,
   } = useStore();
   const { theme, toggle } = useTheme();
@@ -238,7 +243,9 @@ export default function App() {
                 onUpdateDayPromo={updateDayPromotionLocal}
                 favorites={favorites}
                 onToggleFavorite={toggleFavorite}
-                isAdmin={isAdmin} />
+                isAdmin={isAdmin}
+                matchResults={matchResults}
+                onUpdateMatchResult={updateMatchResult} />
             </motion.div>
           )}
           {tab === 'calendar' && (
@@ -260,6 +267,23 @@ export default function App() {
               <GroupsView
                 dayPromoCounts={dayPromoCounts}
                 onPick={d => { setDate(d); setTab('day'); }}
+                matchResults={matchResults}
+                syncStatus={syncStatus}
+                onSyncNow={syncNow}
+                isAdmin={isAdmin}
+              />
+            </motion.div>
+          )}
+          {tab === 'knockout' && (
+            <motion.div key="knockout"
+              initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }} transition={{ duration: .14 }}>
+              <KnockoutView
+                knockoutMatches={knockoutMatches}
+                isAdmin={isAdmin}
+                onUpdate={updateKnockoutMatch}
+                syncStatus={syncStatus}
+                onSyncNow={syncNow}
               />
             </motion.div>
           )}
