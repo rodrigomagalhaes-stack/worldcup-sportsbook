@@ -57,7 +57,7 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
   const isLive = result?.status === 'live';
   const isFinished = result?.status === 'finished' && result.home_score != null && result.away_score != null;
 
-  const gc = groups[match.group]?.color || '#888';
+  const gc = match.group ? (groups[match.group]?.color || '#888') : '#6366f1';
   const hasEvents = events.length > 0;
   const isMadrugada = parseInt(match.timeBRT) <= 4;
 
@@ -131,7 +131,7 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
               padding: '3px 8px', borderRadius: 99,
               background: gc, color: '#fff',
             }}>
-              GRUPO {match.group}
+              {match.group ? `GRUPO ${match.group}` : (match.round || 'MATA-MATA').toUpperCase()}
             </span>
             <button
               onClick={handleStarClick}
@@ -200,7 +200,7 @@ export default function MatchCard({ match, events, onAdd, onDelete, onUpdate, da
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, minWidth: 0 }}>
             <MapPin size={9} style={{ color: 'var(--t3)', flexShrink: 0 }} />
             <span style={{ fontSize: 10, color: 'var(--t3)', lineHeight: 1.3 }}>
-              {match.venue} · Rod. {match.matchday}
+              {match.venue}{match.matchday ? ` · Rod. ${match.matchday}` : ''}
             </span>
           </div>
           {isAdmin && (

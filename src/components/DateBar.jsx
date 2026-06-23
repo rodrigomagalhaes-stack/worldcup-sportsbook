@@ -3,8 +3,12 @@ import { format, parseISO, isToday } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { matches } from '../data/matches';
+import { knockoutSchedule } from '../data/knockout';
 
-const DATES = [...new Set(matches.map(m => m.date))].sort();
+const DATES = [...new Set([
+  ...matches.map(m => m.date),
+  ...knockoutSchedule.map(m => m.date),
+])].sort();
 
 export default function DateBar({ selectedDate, onSelect, events, dayPromoCounts = {} }) {
   const scrollRef = useRef(null);
@@ -74,7 +78,8 @@ export default function DateBar({ selectedDate, onSelect, events, dayPromoCounts
           const br = brasilDates.has(date);
           const ec = evCountByDate[date] || 0;
           const dpc = dayPromoCounts[date] || 0;
-          const dayMatchCount = matches.filter(m => m.date === date).length;
+          const dayMatchCount = matches.filter(m => m.date === date).length
+            + knockoutSchedule.filter(m => m.date === date).length;
 
           return (
             <button

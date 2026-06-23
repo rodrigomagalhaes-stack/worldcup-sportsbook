@@ -5,8 +5,41 @@ import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { CalendarDays } from 'lucide-react';
 import { matches } from '../data/matches';
+import { knockoutSchedule, KNOCKOUT_ROUNDS } from '../data/knockout';
 import MatchCard from './MatchCard';
 import DayPromoBanner from './DayPromoBanner';
+
+/* ─────────────────────────────────────────
+   Combina calendário fixo do mata-mata + overlay dinâmico
+   (mesma lógica do KnockoutView), normalizado para o shape
+   que MatchCard espera (home/away/timeBRT/venue/id).
+───────────────────────────────────────── */
+function buildKnockoutDayMatches(knockoutMatches, selectedDate) {
+  const overlay = knockoutMatches.reduce((acc, m) => { acc[m.id] = m; return acc; }, {});
+  return knockoutSchedule
+    .filter(m => m.date === selectedDate)
+    .map(m => {
+      const live = overlay[m.id] || {};
+      const roundLabel = KNOCKOUT_ROUNDS.find(r => r.id === m.round)?.label || m.round;
+      return {
+        id: m.id,
+        date: m.date,
+        timeBRT: m.timeBRT,
+        venue: m.venue,
+        home: live.home_team || m.homeSlot,
+        away: live.away_team || m.awaySlot,
+        round: roundLabel,
+        group: null,
+        matchday: null,
+        __knockout: true,
+        __result: {
+          status: live.status || 'scheduled',
+          home_score: live.home_score ?? null,
+          away_score: live.away_score ?? null,
+        },
+      };
+    });
+}
 
 function BoostSummaryCard({ detailsByTimeBRT, dayMatches, loading }) {
   const allBoosts = useMemo(() => {
@@ -133,23 +166,24 @@ function BoostSummaryCard({ detailsByTimeBRT, dayMatches, loading }) {
   );
 }
 
-export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, promos = [], onDeleteDayPromo, onUpdateDayPromo, favorites, onToggleFavorite, isAdmin, matchResults = {}, onUpdateMatchResult }) {
+export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdate, dayPromoActive, onOpenDayPromo, promos = [], onDeleteDayPromo, onUpdateDayPromo, favorites, onToggleFavorite, isAdmin, matchResults = {}, onUpdateMatchResult, knockoutMatches = [], onUpdateKnockoutMatch }) {
   const { detailsByTimeBRT, boostsByTimeBRT, loading: boostsLoading } = useAltenarBoosts(selectedDate);
 
-  // Ordenação: madrugada (01/02h) vem ANTES dos demais
-  const dayMatches = useMemo(() =>
-    matches
-      .filter(m => m.date === selectedDate)
-      .sort((a, b) => {
-        const ta = parseInt(a.timeBRT);
-        const tb = parseInt(b.timeBRT);
-        // 01/02h (<=4) mapeados para -1 para virem primeiro
-        const na = ta <= 4 ? ta - 10 : ta;
-        const nb = tb <= 4 ? tb - 10 : tb;
-        return na - nb;
-      }),
-    [selectedDate]
-  );
+  // Ordenação: madrugada (01/02h) vem ANTES dos demais. Inclui jogos
+  // da fase de grupos + mata-mata (calendário oficial sobreposto pelos
+  // dados reais vindos do Supabase).
+  const dayMatches = useMemo(() => {
+    const groupDay = matches.filter(m => m.date === selectedDate);
+    const knockoutDay = buildKnockoutDayMatches(knockoutMatches, selectedDate);
+    return [...groupDay, ...knockoutDay].sort((a, b) => {
+      const ta = parseInt(a.timeBRT);
+      const tb = parseInt(b.timeBRT);
+      // 01/02h (<=4) mapeados para -1 para virem primeiro
+      const na = ta <= 4 ? ta - 10 : ta;
+      const nb = tb <= 4 ? tb - 10 : tb;
+      return na - nb;
+    });
+  }, [selectedDate, knockoutMatches]);
 
   const totalEvs = dayMatches.reduce((a, m) => a + (events[m.id]?.length || 0), 0);
   const hasBrasil = dayMatches.some(m => m.home === 'Brasil' || m.away === 'Brasil');
@@ -242,8 +276,8 @@ export default function DayView({ selectedDate, events, onAdd, onDelete, onUpdat
                 isFav={favorites ? favorites.has(m.id) : false}
                 onToggleFavorite={onToggleFavorite}
                 isAdmin={isAdmin}
-                result={matchResults[m.id]}
-                onUpdateResult={onUpdateMatchResult}
+                result={m.__knockout ? m.__result : matchResults[m.id]}
+                onUpdateResult={m.__knockout ? onUpdateKnockoutMatch : onUpdateMatchResult}
               />
             </motion.div>
           ))}

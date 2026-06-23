@@ -245,7 +245,9 @@ export default function App() {
                 onToggleFavorite={toggleFavorite}
                 isAdmin={isAdmin}
                 matchResults={matchResults}
-                onUpdateMatchResult={updateMatchResult} />
+                onUpdateMatchResult={updateMatchResult}
+                knockoutMatches={knockoutMatches}
+                onUpdateKnockoutMatch={updateKnockoutMatch} />
             </motion.div>
           )}
           {tab === 'calendar' && (
