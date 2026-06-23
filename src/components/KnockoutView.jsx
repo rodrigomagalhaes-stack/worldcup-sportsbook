@@ -201,11 +201,6 @@ function MatchDetailModal({ match, isAdmin, onUpdate, onClose }) {
 export default function KnockoutView({ knockoutMatches = [], isAdmin, onUpdate, syncStatus, onSyncNow }) {
   const rounds = useMemo(() => buildRounds(knockoutMatches), [knockoutMatches]);
   const [selected, setSelected] = useState(null);
-  const [focusRound, setFocusRound] = useState(null);
-
-  const displayRounds = focusRound
-    ? rounds.filter(r => r.id === focusRound)
-    : rounds;
 
   return (
     <div style={{ maxWidth: 1400, margin: '0 auto' }}>
@@ -228,70 +223,16 @@ export default function KnockoutView({ knockoutMatches = [], isAdmin, onUpdate, 
         <SyncBadge syncStatus={syncStatus} onSyncNow={onSyncNow} isAdmin={isAdmin} />
       </div>
 
-      {/* Tabs de fases — clicável para filtrar */}
+      {/* Bracket — horizontal scroll responsivo */}
       <div style={{
-        display: 'flex', gap: 8, marginBottom: 24, paddingBottom: 16,
-        borderBottom: '1px solid var(--line)', overflowX: 'auto',
+        display: 'flex', gap: 'clamp(12px, 2vw, 20px)', overflowX: 'auto',
+        paddingBottom: 12,
       }}>
-        <button
-          onClick={() => setFocusRound(null)}
-          style={{
-            padding: '8px 16px', borderRadius: 99, border: 'none', cursor: 'pointer',
-            background: focusRound === null ? 'var(--green)' : 'var(--card2)',
-            color: focusRound === null ? '#fff' : 'var(--t2)',
-            fontSize: 12, fontWeight: 700, transition: 'all .15s', flexShrink: 0,
-            letterSpacing: '0.05em',
-          }}
-          onMouseEnter={e => {
-            if (focusRound !== null) {
-              e.currentTarget.style.background = 'var(--card)';
-              e.currentTarget.style.borderColor = 'var(--green)';
-            }
-          }}
-          onMouseLeave={e => {
-            if (focusRound !== null) {
-              e.currentTarget.style.background = 'var(--card2)';
-              e.currentTarget.style.borderColor = 'transparent';
-            }
-          }}>
-          Todas as fases
-        </button>
-        {KNOCKOUT_ROUNDS.map(r => (
-          <button
-            key={r.id}
-            onClick={() => setFocusRound(r.id)}
-            style={{
-              padding: '8px 16px', borderRadius: 99, border: '1px solid transparent', cursor: 'pointer',
-              background: focusRound === r.id ? 'var(--green)' : 'var(--card2)',
-              color: focusRound === r.id ? '#fff' : 'var(--t2)',
-              fontSize: 12, fontWeight: 700, transition: 'all .15s', flexShrink: 0,
-              letterSpacing: '0.05em',
-            }}
-            onMouseEnter={e => {
-              if (focusRound !== r.id) {
-                e.currentTarget.style.borderColor = 'var(--green)';
-              }
-            }}
-            onMouseLeave={e => {
-              if (focusRound !== r.id) {
-                e.currentTarget.style.borderColor = 'transparent';
-              }
-            }}>
-            {r.label}
-          </button>
-        ))}
-      </div>
-
-      {/* Bracket — filtrável e responsivo */}
-      <div style={{
-        display: 'flex', gap: 'clamp(12px, 2vw, 20px)', overflowX: focusRound ? 'visible' : 'auto',
-        paddingBottom: 12, flexWrap: focusRound ? 'wrap' : 'nowrap',
-      }}>
-        {displayRounds.map(round => (
+        {rounds.map(round => (
           <div key={round.id} style={{
-            flex: focusRound ? 'clamp(250px, 1fr, 1fr)' : '0 0 clamp(200px, 100%, 260px)',
+            flex: '0 0 clamp(200px, 100%, 260px)',
             display: 'flex', flexDirection: 'column',
-            minWidth: focusRound ? 'auto' : 'clamp(200px, 100%, 260px)',
+            minWidth: 'clamp(200px, 100%, 260px)',
           }}>
             <div style={{
               padding: '8px 12px', marginBottom: 14, borderRadius: 99, textAlign: 'center',
