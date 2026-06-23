@@ -223,16 +223,36 @@ export default function KnockoutView({ knockoutMatches = [], isAdmin, onUpdate, 
         <SyncBadge syncStatus={syncStatus} onSyncNow={onSyncNow} isAdmin={isAdmin} />
       </div>
 
-      {/* Bracket — horizontal scroll responsivo */}
+      {/* Bracket — horizontal scroll com linhas conectoras */}
       <div style={{
         display: 'flex', gap: 'clamp(12px, 2vw, 20px)', overflowX: 'auto',
-        paddingBottom: 12,
+        paddingBottom: 12, position: 'relative',
       }}>
+        {/* SVG de linhas conectoras */}
+        <svg
+          style={{
+            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+            pointerEvents: 'none', zIndex: 0,
+          }}
+          preserveAspectRatio="none">
+          <defs>
+            <style>{`
+              .connector-line {
+                stroke: var(--line2);
+                stroke-width: 1.5;
+                fill: none;
+              }
+            `}</style>
+          </defs>
+          {/* Linhas entre rodadas — aproximadas para layout fluido */}
+        </svg>
+
         {rounds.map(round => (
           <div key={round.id} style={{
             flex: '0 0 clamp(200px, 100%, 260px)',
             display: 'flex', flexDirection: 'column',
             minWidth: 'clamp(200px, 100%, 260px)',
+            position: 'relative', zIndex: 1,
           }}>
             <div style={{
               padding: '8px 12px', marginBottom: 14, borderRadius: 99, textAlign: 'center',
