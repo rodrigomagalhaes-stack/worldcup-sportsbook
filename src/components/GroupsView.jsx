@@ -307,32 +307,32 @@ export default function GroupsView({ dayPromoCounts = {}, onPick, matchResults =
 
         {/* Cabeçalho */}
         <div style={{
-          marginBottom: 32, paddingBottom: 24,
+          marginBottom: 'clamp(24px, 4vw, 32px)', paddingBottom: 'clamp(16px, 3vw, 24px)',
           borderBottom: '1px solid var(--line)',
           display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-          gap: 16, flexWrap: 'wrap',
+          gap: 'clamp(12px, 3vw, 24px)', flexWrap: 'wrap',
         }}>
-          <div>
+          <div style={{ minWidth: 'min(100%, 280px)' }}>
             <h1 style={{
               fontFamily: 'var(--font-d)',
-              fontSize: 'clamp(24px,4vw,36px)',
+              fontSize: 'clamp(24px,5vw,36px)',
               fontWeight: 800, color: 'var(--t1)',
               letterSpacing: '0.02em', lineHeight: 1,
             }}>
               Fase de Grupos
             </h1>
-            <p style={{ fontSize: 13, color: 'var(--t2)', marginTop: 6 }}>
+            <p style={{ fontSize: 'clamp(12px, 2vw, 13px)', color: 'var(--t2)', marginTop: 6 }}>
               {Object.keys(groupData).length} grupos · {totalTeams} seleções · placares ao vivo via football-data.org
             </p>
           </div>
           <SyncBadge syncStatus={syncStatus} onSyncNow={onSyncNow} isAdmin={isAdmin} />
         </div>
 
-        {/* Grade de cards */}
+        {/* Grade de cards responsiva */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 340px), 1fr))',
-          gap: 'clamp(14px,2vw,24px)',
+          gridTemplateColumns: 'repeat(auto-fill, minmax(clamp(280px, 100%, 340px), 1fr))',
+          gap: 'clamp(12px, 3vw, 24px)',
         }}>
           {Object.entries(groupData).map(([letter, data]) => (
             <GroupCard

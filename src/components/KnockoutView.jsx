@@ -117,8 +117,8 @@ function MatchDetailModal({ match, isAdmin, onUpdate, onClose }) {
           transition={{ duration: .22, ease: [.4, 0, .2, 1] }}
           onClick={e => e.stopPropagation()}
           style={{
-            background: 'var(--surface)', borderRadius: 24, border: '1px solid var(--line)', boxShadow: 'var(--shadow-lg)',
-            width: '100%', maxWidth: 440, maxHeight: '85vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
+            background: 'var(--surface)', borderRadius: 'clamp(16px, 4vw, 24px)', border: '1px solid var(--line)', boxShadow: 'var(--shadow-lg)',
+            width: 'clamp(90%, 100%, 440px)', maxWidth: 'clamp(90%, 100%, 440px)', maxHeight: '90vh', display: 'flex', flexDirection: 'column', overflow: 'hidden',
           }}>
           <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--line)', display: 'flex', alignItems: 'center', gap: 12 }}>
             <Trophy size={16} style={{ color: 'var(--green)', flexShrink: 0 }} />
@@ -147,13 +147,19 @@ function MatchDetailModal({ match, isAdmin, onUpdate, onClose }) {
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{match.homeSlot}</span>
-                  <input value={homeTeam} onChange={e => setHomeTeam(e.target.value)} placeholder="Nome da seleção"
-                    style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--line2)', background: 'var(--bg)', color: 'var(--t1)', fontSize: 13 }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input value={homeTeam} onChange={e => setHomeTeam(e.target.value)} placeholder="Nome da seleção"
+                      style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--line2)', background: 'var(--bg)', color: 'var(--t1)', fontSize: 13 }} />
+                    {homeTeam && <Flag team={homeTeam} size="sm" />}
+                  </div>
                 </label>
                 <label style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
                   <span style={{ fontSize: 10, fontWeight: 700, color: 'var(--t3)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{match.awaySlot}</span>
-                  <input value={awayTeam} onChange={e => setAwayTeam(e.target.value)} placeholder="Nome da seleção"
-                    style={{ padding: '8px 10px', borderRadius: 8, border: '1px solid var(--line2)', background: 'var(--bg)', color: 'var(--t1)', fontSize: 13 }} />
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    <input value={awayTeam} onChange={e => setAwayTeam(e.target.value)} placeholder="Nome da seleção"
+                      style={{ flex: 1, padding: '8px 10px', borderRadius: 8, border: '1px solid var(--line2)', background: 'var(--bg)', color: 'var(--t1)', fontSize: 13 }} />
+                    {awayTeam && <Flag team={awayTeam} size="sm" />}
+                  </div>
                 </label>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end' }}>
                   <label style={{ display: 'flex', flexDirection: 'column', gap: 5, flex: 1 }}>
@@ -204,18 +210,18 @@ export default function KnockoutView({ knockoutMatches = [], isAdmin, onUpdate, 
   return (
     <div style={{ maxWidth: 1400, margin: '0 auto' }}>
       <div style={{
-        marginBottom: 32, paddingBottom: 24, borderBottom: '1px solid var(--line)',
+        marginBottom: 'clamp(24px, 4vw, 32px)', paddingBottom: 'clamp(16px, 3vw, 24px)', borderBottom: '1px solid var(--line)',
         display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
-        gap: 16, flexWrap: 'wrap',
+        gap: 'clamp(12px, 3vw, 24px)', flexWrap: 'wrap',
       }}>
-        <div>
+        <div style={{ minWidth: 'min(100%, 280px)' }}>
           <h1 style={{
-            fontFamily: 'var(--font-d)', fontSize: 'clamp(24px,4vw,36px)', fontWeight: 800,
+            fontFamily: 'var(--font-d)', fontSize: 'clamp(24px,5vw,36px)', fontWeight: 800,
             color: 'var(--t1)', letterSpacing: '0.02em', lineHeight: 1,
           }}>
             Mata-mata
           </h1>
-          <p style={{ fontSize: 13, color: 'var(--t2)', marginTop: 6 }}>
+          <p style={{ fontSize: 'clamp(12px, 2vw, 13px)', color: 'var(--t2)', marginTop: 6 }}>
             32 jogos · Rodada 32 → Oitavas → Quartas → Semifinal → Final · times e placares preenchidos automaticamente conforme os grupos terminam
           </p>
         </div>
@@ -276,13 +282,16 @@ export default function KnockoutView({ knockoutMatches = [], isAdmin, onUpdate, 
         ))}
       </div>
 
-      {/* Bracket — filtrável */}
-      <div style={{ display: 'flex', gap: focusRound ? 20 : 20, overflowX: focusRound ? 'visible' : 'auto', paddingBottom: 12 }}>
+      {/* Bracket — filtrável e responsivo */}
+      <div style={{
+        display: 'flex', gap: 'clamp(12px, 2vw, 20px)', overflowX: focusRound ? 'visible' : 'auto',
+        paddingBottom: 12, flexWrap: focusRound ? 'wrap' : 'nowrap',
+      }}>
         {displayRounds.map(round => (
           <div key={round.id} style={{
-            flex: focusRound ? '1 1 auto' : '0 0 240px',
+            flex: focusRound ? 'clamp(250px, 1fr, 1fr)' : '0 0 clamp(200px, 100%, 260px)',
             display: 'flex', flexDirection: 'column',
-            minWidth: focusRound ? 'auto' : '240px',
+            minWidth: focusRound ? 'auto' : 'clamp(200px, 100%, 260px)',
           }}>
             <div style={{
               padding: '8px 12px', marginBottom: 14, borderRadius: 99, textAlign: 'center',
