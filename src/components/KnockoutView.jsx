@@ -201,6 +201,11 @@ function MatchDetailModal({ match, isAdmin, onUpdate, onClose }) {
 export default function KnockoutView({ knockoutMatches = [], isAdmin, onUpdate, syncStatus, onSyncNow }) {
   const rounds = useMemo(() => buildRounds(knockoutMatches), [knockoutMatches]);
   const [selected, setSelected] = useState(null);
+  const [focusRound, setFocusRound] = useState(null);
+
+  const displayRounds = focusRound
+    ? rounds.filter(r => r.id === focusRound)
+    : rounds;
 
   return (
     <div style={{ maxWidth: 1400, margin: '0 auto' }}>
@@ -223,44 +228,51 @@ export default function KnockoutView({ knockoutMatches = [], isAdmin, onUpdate, 
         <SyncBadge syncStatus={syncStatus} onSyncNow={onSyncNow} isAdmin={isAdmin} />
       </div>
 
-      {/* Bracket — horizontal scroll com linhas conectoras */}
+      {/* Tabs de fases — único lugar clicável para filtrar */}
       <div style={{
-        display: 'flex', gap: 'clamp(12px, 2vw, 20px)', overflowX: 'auto',
-        paddingBottom: 12, position: 'relative',
+        display: 'flex', gap: 8, marginBottom: 24, paddingBottom: 16,
+        borderBottom: '1px solid var(--line)', overflowX: 'auto',
       }}>
-        {/* SVG de linhas conectoras */}
-        <svg
+        <button
+          onClick={() => setFocusRound(null)}
           style={{
-            position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-            pointerEvents: 'none', zIndex: 0,
-          }}
-          preserveAspectRatio="none">
-          <defs>
-            <style>{`
-              .connector-line {
-                stroke: var(--line2);
-                stroke-width: 1.5;
-                fill: none;
-              }
-            `}</style>
-          </defs>
-          {/* Linhas entre rodadas — aproximadas para layout fluido */}
-        </svg>
+            padding: '8px 16px', borderRadius: 99, border: 'none', cursor: 'pointer',
+            background: focusRound === null ? 'var(--green)' : 'var(--card2)',
+            color: focusRound === null ? '#fff' : 'var(--t2)',
+            fontSize: 12, fontWeight: 700, transition: 'all .15s', flexShrink: 0,
+            letterSpacing: '0.05em',
+          }}>
+          Todas as fases
+        </button>
+        {KNOCKOUT_ROUNDS.map(r => (
+          <button
+            key={r.id}
+            onClick={() => setFocusRound(r.id)}
+            style={{
+              padding: '8px 16px', borderRadius: 99, border: 'none', cursor: 'pointer',
+              background: focusRound === r.id ? 'var(--green)' : 'var(--card2)',
+              color: focusRound === r.id ? '#fff' : 'var(--t2)',
+              fontSize: 12, fontWeight: 700, transition: 'all .15s', flexShrink: 0,
+              letterSpacing: '0.05em',
+            }}>
+            {r.label}
+          </button>
+        ))}
+      </div>
 
-        {rounds.map(round => (
+      {/* Bracket — sem labels duplicados acima das colunas */}
+      <div style={{
+        display: 'flex', gap: 'clamp(12px, 2vw, 20px)',
+        overflowX: focusRound ? 'visible' : 'auto',
+        flexWrap: focusRound ? 'wrap' : 'nowrap',
+        paddingBottom: 12,
+      }}>
+        {displayRounds.map(round => (
           <div key={round.id} style={{
-            flex: '0 0 clamp(200px, 100%, 260px)',
+            flex: focusRound ? '1 1 240px' : '0 0 clamp(200px, 100%, 260px)',
             display: 'flex', flexDirection: 'column',
             minWidth: 'clamp(200px, 100%, 260px)',
-            position: 'relative', zIndex: 1,
           }}>
-            <div style={{
-              padding: '8px 12px', marginBottom: 14, borderRadius: 99, textAlign: 'center',
-              background: 'var(--card2)', border: '1px solid var(--line)',
-              fontSize: 11, fontWeight: 800, color: 'var(--t2)', textTransform: 'uppercase', letterSpacing: '0.06em',
-            }}>
-              {round.label}
-            </div>
             <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: 16 }}>
               {round.matches.map(m => (
                 <MatchBox key={m.id} match={m} onClick={() => setSelected(m)} />
